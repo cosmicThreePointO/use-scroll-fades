@@ -1,6 +1,6 @@
 {
-  "name": "use-scroll-fades",
-  "version": "1.0.0",
+  "name": "@gboue/use-scroll-fades",
+  "version": "0.0.0-development",
   "description": "Library-agnostic React hook that adds top/bottom scroll-fade indicators to any scrollable container",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -23,7 +23,8 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
-    "prepublishOnly": "npm run build && npm run test && npm run typecheck"
+    "prepublishOnly": "npm run build && npm run test && npm run typecheck",
+    "semantic-release": "semantic-release"
   },
   "keywords": [
     "react",
@@ -39,26 +40,29 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/use-scroll-fades"
+    "url": "https://github.com/cosmicThreePointO/use-scroll-fades.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/use-scroll-fades/issues"
+    "url": "https://github.com/cosmicThreePointO/use-scroll-fades/issues"
   },
-  "homepage": "https://github.com/your-username/use-scroll-fades#readme",
+  "homepage": "https://github.com/cosmicThreePointO/use-scroll-fades#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "react": ">=16.8.0"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
     "@types/node": "^24.2.1",
     "@types/react": "^19.1.9",
     "jsdom": "^26.1.0",
+    "semantic-release": "^24.2.7",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "react": "^19.1.1"
   },
   "engines": {
     "node": ">=14.0.0"

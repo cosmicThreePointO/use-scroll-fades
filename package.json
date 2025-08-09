@@ -1,0 +1,66 @@
+{
+  "name": "use-scroll-fades",
+  "version": "1.0.0",
+  "description": "Library-agnostic React hook that adds top/bottom scroll-fade indicators to any scrollable container",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "prepublishOnly": "npm run build && npm run test && npm run typecheck"
+  },
+  "keywords": [
+    "react",
+    "hook",
+    "scroll",
+    "fade",
+    "gradient",
+    "indicator",
+    "typescript",
+    "library-agnostic"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/use-scroll-fades"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/use-scroll-fades/issues"
+  },
+  "homepage": "https://github.com/your-username/use-scroll-fades#readme",
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^24.2.1",
+    "@types/react": "^19.1.9",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "react": "^19.1.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

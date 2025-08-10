@@ -141,23 +141,62 @@ describe('useScrollFades Animations', () => {
   })
 
   describe('fadeSize configuration', () => {
-    it('should use custom fade size', () => {
-      const options = { fadeSize: 32 }
-      render(<AnimationTestComponent options={options} />)
+    it('should use custom fade size when fades are active', () => {
+      function CustomFadeSizeComponent() {
+        const { containerRef, getContainerStyle } = useScrollFades({ fadeSize: 32 })
+        // Force all fades to be visible by passing custom state
+        const customState = { showTop: true, showBottom: true, showLeft: true, showRight: true }
+        
+        return (
+          <div 
+            ref={containerRef as any}
+            data-testid="scrollable-container"
+            style={{
+              height: '200px',
+              overflow: 'auto',
+              ...getContainerStyle(customState)
+            }}
+          >
+            <div style={{ height: '500px' }}>Long content</div>
+          </div>
+        )
+      }
+      
+      render(<CustomFadeSizeComponent />)
       
       const container = screen.getByTestId('scrollable-container')
       
-      // Should contain the custom fade size in mask gradients
+      // Should contain the custom fade size in mask gradients when fades are active
       expect(container.style.maskImage).toContain('32px')
       expect(container.style.maskImage).toContain('calc(100% - 32px)')
     })
 
-    it('should default to 20px fade size', () => {
-      render(<AnimationTestComponent />)
+    it('should default to 20px fade size when fades are active', () => {
+      function DefaultFadeSizeComponent() {
+        const { containerRef, getContainerStyle } = useScrollFades()
+        // Force fades to be visible by passing custom state
+        const customState = { showTop: true, showBottom: true, showLeft: false, showRight: false }
+        
+        return (
+          <div 
+            ref={containerRef as any}
+            data-testid="scrollable-container"
+            style={{
+              height: '200px',
+              overflow: 'auto',
+              ...getContainerStyle(customState)
+            }}
+          >
+            <div style={{ height: '500px' }}>Long content</div>
+          </div>
+        )
+      }
+      
+      render(<DefaultFadeSizeComponent />)
       
       const container = screen.getByTestId('scrollable-container')
       
-      // Should contain default 20px fade size
+      // Should contain default 20px fade size when fades are active
       expect(container.style.maskImage).toContain('20px')
       expect(container.style.maskImage).toContain('calc(100% - 20px)')
     })

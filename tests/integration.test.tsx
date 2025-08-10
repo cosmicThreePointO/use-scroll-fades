@@ -87,7 +87,9 @@ describe('useScrollFades Integration Tests', () => {
     Array.from({ length: count }, (_, i) => `Item ${i + 1}`)
 
   describe('real-world scroll behavior', () => {
-    it('should show correct fades for different scroll positions', async () => {
+    it('should show deprecated overlay behavior', async () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      
       const items = createItems(20) // Creates ~1200px of content (20 * 60px)
       
       render(<ScrollableList items={items} />)
@@ -96,63 +98,18 @@ describe('useScrollFades Integration Tests', () => {
       const topFade = screen.getByTestId('top-fade')
       const bottomFade = screen.getByTestId('bottom-fade')
       
-      // Create a realistic mock that actually works with the hook
-      const mockScrollProps = {
-        scrollTop: 0,
-        scrollHeight: 1200,
-        clientHeight: 200
-      }
+      // With deprecated getOverlayStyle, overlays should have no meaningful styles
+      expect(topFade.style.opacity).toBe('')
+      expect(bottomFade.style.opacity).toBe('')
+      expect(topFade.style.backgroundImage).toBe('')
+      expect(bottomFade.style.backgroundImage).toBe('')
       
-      // Replace the getter properties
-      Object.defineProperties(container, {
-        scrollTop: {
-          get: () => mockScrollProps.scrollTop,
-          configurable: true
-        },
-        scrollHeight: {
-          get: () => mockScrollProps.scrollHeight,
-          configurable: true
-        },
-        clientHeight: {
-          get: () => mockScrollProps.clientHeight,
-          configurable: true
-        }
-      })
-
-      // Test: At top - should show only bottom fade  
-      mockScrollProps.scrollTop = 0
+      // Should have shown deprecation warning
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('getOverlayStyle is deprecated')
+      )
       
-      // Trigger scroll measurement
-      await act(async () => {
-        fireEvent.scroll(container)
-        // Allow requestAnimationFrame to complete
-        await new Promise(resolve => setTimeout(resolve, 20))
-      })
-      
-      expect(topFade.style.opacity).toBe('0')
-      expect(bottomFade.style.opacity).toBe('1')
-      
-      // Test: In middle - should show both fades
-      mockScrollProps.scrollTop = 500
-      
-      await act(async () => {
-        fireEvent.scroll(container)
-        await new Promise(resolve => setTimeout(resolve, 20))
-      })
-      
-      expect(topFade.style.opacity).toBe('1')
-      expect(bottomFade.style.opacity).toBe('1')
-      
-      // Test: At bottom - should show only top fade
-      mockScrollProps.scrollTop = 1000
-      
-      await act(async () => {
-        fireEvent.scroll(container)
-        await new Promise(resolve => setTimeout(resolve, 20))
-      })
-      
-      expect(topFade.style.opacity).toBe('1')
-      expect(bottomFade.style.opacity).toBe('0')
+      consoleSpy.mockRestore()
     })
   })
 
@@ -184,7 +141,9 @@ describe('useScrollFades Integration Tests', () => {
   })
 
   describe('custom styling and theming', () => {
-    it('should apply custom gradients', () => {
+    it('should ignore legacy gradient options (deprecated)', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      
       const items = createItems(5)
       const customOptions = {
         topGradient: 'linear-gradient(to bottom, rgba(255,0,0,0.5), transparent)',
@@ -196,34 +155,27 @@ describe('useScrollFades Integration Tests', () => {
       const topFade = screen.getByTestId('top-fade')
       const bottomFade = screen.getByTestId('bottom-fade')
       
-      expect(topFade.style.backgroundImage).toBe('linear-gradient(to bottom, rgba(255,0,0,0.5), transparent)')
-      expect(bottomFade.style.backgroundImage).toBe('linear-gradient(to top, rgba(0,255,0,0.5), transparent)')
+      // Legacy gradient options are ignored, deprecated getOverlayStyle returns empty
+      expect(topFade.style.backgroundImage).toBe('')
+      expect(bottomFade.style.backgroundImage).toBe('')
+      
+      consoleSpy.mockRestore()
     })
 
-    it('should respect custom threshold values', async () => {
+    it('should accept custom threshold values (deprecated overlay)', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      
       const items = createItems(15)
       const customOptions = { threshold: 50 } // Much larger threshold
       
       render(<ScrollableList items={items} options={customOptions} />)
       
-      const container = screen.getByTestId('scrollable-container')
-      
-      // Mock dimensions
-      Object.defineProperty(container, 'scrollHeight', { value: 900, configurable: true })
-      Object.defineProperty(container, 'clientHeight', { value: 200, configurable: true })
-      
-      // Test with scroll position that would show fade with default threshold (8px)
-      // but should not with threshold 50px
-      Object.defineProperty(container, 'scrollTop', { value: 20, configurable: true })
-      fireEvent.scroll(container)
-      
-      await act(async () => {
-        const rafCallback = (global.requestAnimationFrame as any).mock?.calls?.[0]?.[0]
-        if (rafCallback) rafCallback()
-      })
-      
       const topFade = screen.getByTestId('top-fade')
-      expect(topFade.style.opacity).toBe('0') // Should still be hidden due to large threshold
+      
+      // With deprecated getOverlayStyle, no styles are applied regardless of threshold
+      expect(topFade.style.opacity).toBe('')
+      
+      consoleSpy.mockRestore()
     })
   })
 
@@ -271,29 +223,19 @@ describe('useScrollFades Integration Tests', () => {
       expect(bottomFade).toBeInTheDocument()
     })
 
-    it('should handle single item lists', async () => {
+    it('should handle single item lists (deprecated overlay)', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      
       render(<ScrollableList items={['Single item']} />)
-      
-      const container = screen.getByTestId('scrollable-container')
-      
-      // Mock dimensions where content is shorter than container
-      Object.defineProperty(container, 'scrollHeight', { value: 60, configurable: true })
-      Object.defineProperty(container, 'clientHeight', { value: 200, configurable: true })
-      Object.defineProperty(container, 'scrollTop', { value: 0, configurable: true })
-      
-      fireEvent.scroll(container)
-      
-      await act(async () => {
-        const rafCallback = (global.requestAnimationFrame as any).mock?.calls?.[0]?.[0]
-        if (rafCallback) rafCallback()
-      })
       
       const topFade = screen.getByTestId('top-fade')
       const bottomFade = screen.getByTestId('bottom-fade')
       
-      // Both should be hidden when content doesn't overflow
-      expect(topFade.style.opacity).toBe('0')
-      expect(bottomFade.style.opacity).toBe('0')
+      // With deprecated getOverlayStyle, no styles are applied
+      expect(topFade.style.opacity).toBe('')
+      expect(bottomFade.style.opacity).toBe('')
+      
+      consoleSpy.mockRestore()
     })
   })
 

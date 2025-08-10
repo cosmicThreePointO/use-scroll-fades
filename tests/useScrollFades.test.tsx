@@ -3,9 +3,9 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { useScrollFades } from '../src/useScrollFades'
 
-// Test component that uses the hook
+// Test component that uses the new mask-image approach
 function TestComponent({ options = {} }: { options?: any }) {
-  const { containerRef, state, getOverlayStyle } = useScrollFades(options)
+  const { containerRef, state, getContainerStyle, getOverlayStyle } = useScrollFades(options)
   
   return (
     <div data-testid="wrapper">
@@ -14,11 +14,13 @@ function TestComponent({ options = {} }: { options?: any }) {
         data-testid="container"
         style={{
           height: 200,
-          overflow: 'auto'
+          overflow: 'auto',
+          ...getContainerStyle()
         }}
       >
         <div style={{ height: 1000 }}>Long content</div>
       </div>
+      {/* Legacy overlay elements for backward compatibility tests */}
       <div 
         data-testid="top-overlay" 
         style={getOverlayStyle('top')}
@@ -29,6 +31,9 @@ function TestComponent({ options = {} }: { options?: any }) {
       />
       <div data-testid="state">
         {JSON.stringify(state)}
+      </div>
+      <div data-testid="container-styles">
+        {JSON.stringify(getContainerStyle())}
       </div>
     </div>
   )
@@ -68,31 +73,52 @@ describe('useScrollFades', () => {
       expect(state).toEqual({ showTop: false, showBottom: false, showLeft: false, showRight: false })
     })
 
-    it('should apply default gradients', () => {
+    it('should apply default mask-image styles', () => {
       render(<TestComponent />)
       
-      const topOverlay = screen.getByTestId('top-overlay')
-      const bottomOverlay = screen.getByTestId('bottom-overlay')
+      const containerStyles = JSON.parse(screen.getByTestId('container-styles').textContent!)
       
-      expect(topOverlay.style.backgroundImage).toBe('linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0))')
-      expect(bottomOverlay.style.backgroundImage).toBe('linear-gradient(to top, rgba(0,0,0,0.25), rgba(0,0,0,0))')
+      // Check for mask-image properties
+      expect(containerStyles.maskImage).toBeDefined()
+      expect(containerStyles.WebkitMaskImage).toBeDefined()
+      expect(containerStyles.maskComposite).toBe('intersect')
+      expect(containerStyles.WebkitMaskComposite).toBe('source-in')
     })
   })
 
   describe('options configuration', () => {
-    it('should use custom gradients', () => {
-      const options = {
-        topGradient: 'linear-gradient(to bottom, red, transparent)',
-        bottomGradient: 'linear-gradient(to top, blue, transparent)'
+    it('should use custom fadeSize when fades are active', () => {
+      function CustomFadeSizeTestComponent() {
+        const { containerRef, getContainerStyle } = useScrollFades({ fadeSize: 32 })
+        // Force fades to be active
+        const activeState = { showTop: true, showBottom: true, showLeft: false, showRight: false }
+        
+        return (
+          <div data-testid="wrapper">
+            <div
+              ref={containerRef as any}
+              data-testid="container"
+              style={{
+                height: 200,
+                overflow: 'auto',
+                ...getContainerStyle(activeState)
+              }}
+            >
+              <div style={{ height: 1000 }}>Long content</div>
+            </div>
+            <div data-testid="container-styles">
+              {JSON.stringify(getContainerStyle(activeState))}
+            </div>
+          </div>
+        )
       }
       
-      render(<TestComponent options={options} />)
+      render(<CustomFadeSizeTestComponent />)
       
-      const topOverlay = screen.getByTestId('top-overlay')
-      const bottomOverlay = screen.getByTestId('bottom-overlay')
+      const containerStyles = JSON.parse(screen.getByTestId('container-styles').textContent!)
       
-      expect(topOverlay.style.backgroundImage).toBe('linear-gradient(to bottom, red, transparent)')
-      expect(bottomOverlay.style.backgroundImage).toBe('linear-gradient(to top, blue, transparent)')
+      // Check that fadeSize affects mask-image generation when fades are active
+      expect(containerStyles.maskImage).toContain('32px')
     })
 
     it('should use custom threshold', () => {
@@ -106,23 +132,26 @@ describe('useScrollFades', () => {
   })
 
   describe('getOverlayStyle function', () => {
-    it('should return correct styles for visible top overlay', () => {
+    it('should return empty styles (deprecated function)', () => {
       render(<TestComponent />)
       
-      // Test the function directly by checking the overlay
+      // Test the deprecated function returns empty styles
       const topOverlay = screen.getByTestId('top-overlay')
       
-      // Initially hidden (showTop: false)
-      expect(topOverlay.style.opacity).toBe('0')
+      // Should be empty since getOverlayStyle is deprecated
+      expect(topOverlay.style.opacity).toBe('')
+      expect(topOverlay.style.backgroundImage).toBe('')
     })
 
-    it('should accept custom state parameter', () => {
+    it('should accept custom state parameter (deprecated)', () => {
       render(<TestComponent />)
       
-      // The getOverlayStyle function should work with custom state
-      // This is tested indirectly through the rendering
-      expect(screen.getByTestId('top-overlay')).toBeTruthy()
-      expect(screen.getByTestId('bottom-overlay')).toBeTruthy()
+      // The deprecated getOverlayStyle function should return empty styles
+      const topOverlay = screen.getByTestId('top-overlay')
+      const bottomOverlay = screen.getByTestId('bottom-overlay')
+      
+      expect(topOverlay.style.backgroundImage).toBe('')
+      expect(bottomOverlay.style.backgroundImage).toBe('')
     })
   })
 

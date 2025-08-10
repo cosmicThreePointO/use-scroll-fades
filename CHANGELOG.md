@@ -1,3 +1,16 @@
+# [2.0.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v1.1.0...v2.0.0) (2025-08-10)
+
+
+### Features
+
+* revolutionary mask-image approach for true transparency ([760bc9f](https://github.com/cosmicThreePointO/use-scroll-fades/commit/760bc9f1d337d689ca09bd5c7e6b1b5d48fd5e33))
+* revolutionary mask-image approach with true transparency ([5ac07f4](https://github.com/cosmicThreePointO/use-scroll-fades/commit/5ac07f462acbd24fd725d4aac096803623ab130e))
+
+
+### BREAKING CHANGES
+
+* getOverlayStyle() is now deprecated and returns empty styles. Use getContainerStyle() directly on your scrollable container instead.
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

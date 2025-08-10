@@ -29,6 +29,27 @@ Types are included. If you use JavaScript only, no extra step is required. If yo
 
 ---
 
+## Visual Examples
+
+See the library in action with different scrolling scenarios:
+
+### Vertical Scrolling with Gradient Background ✨
+![Vertical Scrolling with Gradient Background](./docs/demo-vertical-gradient.gif)
+
+> ⚠️ **Top and bottom fades** that works perfectly with complex gradient backgrounds!
+
+### Horizontal Scrolling with Image Pattern 🎨
+![Horizontal Scrolling with Image Pattern](./docs/horizontal-scroll-fade.gif)
+
+> 🎨 **Left and right fades** work seamlessly with background images and patterns!
+
+### Combined Vertical + Horizontal Scrolling 🚀
+![Combined Vertical + Horizontal Scrolling](./docs/combined-vertical-horizontal-fade.gif)
+
+> 🚀 **All four fades** (top, bottom, left, right) work together automatically. No configuration needed!
+
+---
+
 ## Quick Start (New Mask-Image Approach) ✨
 
 The new mask-image approach provides **true transparency** that works with any background:
@@ -165,17 +186,54 @@ function LegacyScrollableList({ items }) {
 </div>
 ```
 
+### Combined Vertical + Horizontal Scrolling ✨
+
+The mask-image approach automatically handles both vertical and horizontal scrolling simultaneously - no configuration needed!
+
 ## Browser Support
 
-The mask-image approach has excellent modern browser support:
+The package works in all modern browsers with full support for both mask-image and overlay approaches:
 
-- ✅ Chrome 120+
-- ✅ Firefox 53+  
-- ✅ Safari 15.4+
-- ✅ Edge 79+
-- ❌ Internet Explorer (fallback to no fades)
+### ✅ Mask-Image Approach (Recommended)
+- **Chrome 120+** - Full mask-image support
+- **Firefox 53+** - Full mask-image support  
+- **Safari 15.4+** - Full mask-image support with WebKit prefixes
+- **Edge 79+** - Full mask-image support
 
-For older browsers, the hook gracefully degrades to no fade effects while maintaining full scrolling functionality.
+### ✅ Legacy Overlay Approach (Fallback)
+- **Chrome 26+** (2013+) - Full animation support
+- **Firefox 16+** (2012+) - Full animation support
+- **Safari 9+** (2015+) - Full animation support
+- **Edge 12+** (2015+) - Full animation support
+- **iOS Safari 9+** (2015+) - Full animation support
+- **Android Chrome 26+** (2013+) - Full animation support
+
+### 🔧 Graceful Degradation
+- **Internet Explorer 11** - Overlay approach works, no smooth transitions
+- **Older browsers** - Falls back to instant show/hide, maintains scrolling functionality
+
+For browsers without mask-image support, the hook automatically falls back to the overlay approach or gracefully degrades to no fade effects while maintaining full scrolling functionality.
+
+### Technical Details
+
+The animations use CSS `opacity` transitions with vendor prefixes for maximum compatibility:
+```css
+transition: opacity 200ms ease-out;
+-webkit-transition: opacity 200ms ease-out; /* Safari */
+-moz-transition: opacity 200ms ease-out;    /* Firefox */
+-ms-transition: opacity 200ms ease-out;     /* IE/Edge */
+```
+
+**Performance optimized:**
+- Uses `opacity` (GPU-accelerated) instead of `display` changes
+- `pointer-events: none` prevents interaction overhead  
+- `requestAnimationFrame` for smooth scroll handling
+- `ResizeObserver` and `MutationObserver` for efficient updates
+
+**Accessibility features:**
+- `aria-hidden="true"` on overlay elements
+- Respects `prefers-reduced-motion` when you disable transitions
+- No interference with keyboard navigation or screen readers
 
 ## Horizontal Scrolling
 
@@ -455,45 +513,6 @@ export default function VirtualizedList({ items }) {
 * `ResizeObserver` and `MutationObserver` ensure fades update when content changes
 * State updates are optimized to prevent unnecessary re-renders
 * No external dependencies means smaller bundle size
-
----
-
-## Browser Compatibility
-
-The package works in all modern browsers with full animation support:
-
-### ✅ Fully Supported
-- **Chrome 26+** (2013+)
-- **Firefox 16+** (2012+) 
-- **Safari 9+** (2015+)
-- **Edge 12+** (2015+)
-- **iOS Safari 9+** (2015+)
-- **Android Chrome 26+** (2013+)
-
-### 🔧 Core Features (without animations)
-- **Internet Explorer 11** - Fade effects work, but no smooth transitions
-- **Older browsers** - Falls back to instant show/hide
-
-### Technical Details
-
-The animations use CSS `opacity` transitions with vendor prefixes for maximum compatibility:
-```css
-transition: opacity 200ms ease-out;
--webkit-transition: opacity 200ms ease-out; /* Safari */
--moz-transition: opacity 200ms ease-out;    /* Firefox */
--ms-transition: opacity 200ms ease-out;     /* IE/Edge */
-```
-
-**Performance optimized:**
-- Uses `opacity` (GPU-accelerated) instead of `display` changes
-- `pointer-events: none` prevents interaction overhead  
-- `requestAnimationFrame` for smooth scroll handling
-- `ResizeObserver` and `MutationObserver` for efficient updates
-
-**Accessibility features:**
-- `aria-hidden="true"` on overlay elements
-- Respects `prefers-reduced-motion` when you disable transitions
-- No interference with keyboard navigation or screen readers
 
 ---
 

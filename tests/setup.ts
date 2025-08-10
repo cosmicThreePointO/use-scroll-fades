@@ -1,5 +1,16 @@
 import '@testing-library/jest-dom'
 
+// Suppress expected deprecation warnings during tests
+const originalConsoleWarn = console.warn
+console.warn = (...args) => {
+  // Suppress known deprecation warnings during tests
+  if (typeof args[0] === 'string' && args[0].includes('getOverlayStyle is deprecated')) {
+    return
+  }
+  // Allow other warnings through
+  originalConsoleWarn.apply(console, args)
+}
+
 // Mock requestAnimationFrame and cancelAnimationFrame
 global.requestAnimationFrame = (callback: FrameRequestCallback): number => {
   return setTimeout(callback, 16) // ~60fps

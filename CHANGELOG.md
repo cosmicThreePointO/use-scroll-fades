@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v2.0.0...v2.0.1) (2025-08-10)
+
+
+### Bug Fixes
+
+* ensure documentation updates are published to npm ([6e1ca39](https://github.com/cosmicThreePointO/use-scroll-fades/commit/6e1ca39e0d103e026dc10fa785258fc808389346))
+
 # [2.0.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v1.1.0...v2.0.0) (2025-08-10)
 
 

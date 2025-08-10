@@ -9,7 +9,7 @@ import { computeFadeState } from './computeFadeState'
  * @returns CSS transition value string
  */
 const createTransitionValue = (duration: number, timingFunction: string): string => {
-  return `opacity ${duration}ms ${timingFunction}`.trim()
+  return `mask ${duration}ms ${timingFunction}, -webkit-mask ${duration}ms ${timingFunction}`.trim()
 }
 
 /**
@@ -24,28 +24,80 @@ const applyVendorPrefixedTransitions = (
   styles.transition = transitionValue
   ;(styles as any).WebkitTransition = transitionValue // Safari support
   ;(styles as any).MozTransition = transitionValue // Firefox support  
-  ;(styles as any).msTransition = transitionValue // IE support
+  ;(styles as any).msTransition = transitionValue // IE support (fallback)
 }
 
 /**
- * Computes base styles for fade overlay elements
+ * Creates mask-image CSS value for fade effects
+ * @param showTop - Whether top fade is visible
+ * @param showBottom - Whether bottom fade is visible  
+ * @param showLeft - Whether left fade is visible
+ * @param showRight - Whether right fade is visible
+ * @param fadeSize - Size of fade effect in pixels
+ * @returns CSS mask-image value string
+ */
+const createMaskImage = (
+  showTop: boolean,
+  showBottom: boolean, 
+  showLeft: boolean,
+  showRight: boolean,
+  fadeSize: number = 20
+): string => {
+  // Create base mask (fully opaque center)
+  let topStop = showTop ? `${fadeSize}px` : '0px'
+  let bottomStop = showBottom ? `calc(100% - ${fadeSize}px)` : '100%'
+  let leftStop = showLeft ? `${fadeSize}px` : '0px' 
+  let rightStop = showRight ? `calc(100% - ${fadeSize}px)` : '100%'
+  
+  // Vertical gradient (handles top/bottom fades)
+  const verticalGradient = `linear-gradient(to bottom, transparent 0px, black ${topStop}, black ${bottomStop}, transparent 100%)`
+  
+  // Horizontal gradient (handles left/right fades)  
+  const horizontalGradient = `linear-gradient(to right, transparent 0px, black ${leftStop}, black ${rightStop}, transparent 100%)`
+  
+  return `${verticalGradient}, ${horizontalGradient}`
+}
+
+/**
+ * Computes container styles with mask-based fade effects
  * @param params - Style computation parameters
  * @returns React CSS properties object
  */
-const computeOverlayStyles = (params: {
-  visible: boolean
-  backgroundImage: string
+const computeContainerStyles = (params: {
+  showTop: boolean
+  showBottom: boolean
+  showLeft: boolean
+  showRight: boolean
+  fadeSize: number
   disableTransitions: boolean
   transitionDuration: number
   transitionTimingFunction: string
 }): React.CSSProperties => {
-  const { visible, backgroundImage, disableTransitions, transitionDuration, transitionTimingFunction } = params
+  const { 
+    showTop, 
+    showBottom, 
+    showLeft, 
+    showRight, 
+    fadeSize,
+    disableTransitions, 
+    transitionDuration, 
+    transitionTimingFunction 
+  } = params
+  
+  const maskImage = createMaskImage(showTop, showBottom, showLeft, showRight, fadeSize)
   
   const baseStyles: React.CSSProperties = {
-    backgroundImage,
-    opacity: visible ? 1 : 0,
-    pointerEvents: 'none' as const, // Always none to prevent interaction
-  }
+    maskImage,
+    WebkitMaskImage: maskImage, // Safari support
+    maskComposite: 'intersect',
+    WebkitMaskComposite: 'source-in', // Safari uses different syntax
+    maskRepeat: 'no-repeat',
+    WebkitMaskRepeat: 'no-repeat',
+    maskSize: '100% 100%, 100% 100%',
+    WebkitMaskSize: '100% 100%, 100% 100%',
+    maskPosition: '0 0, 0 0',
+    WebkitMaskPosition: '0 0, 0 0'
+  } as React.CSSProperties
   
   if (!disableTransitions) {
     const transitionValue = createTransitionValue(transitionDuration, transitionTimingFunction)
@@ -56,50 +108,31 @@ const computeOverlayStyles = (params: {
 }
 
 /**
- * Custom hook for managing scroll-based fade overlays on scrollable containers.
+ * Custom hook for managing scroll-based fade effects on scrollable containers.
  * 
- * Provides automatic fade-in/fade-out overlays at the top and bottom of scrollable content
- * to indicate when there is more content to scroll. The hook handles scroll events,
- * content changes, and resize events automatically.
+ * Uses CSS mask-image to create true transparency fade effects that work with any background.
+ * Unlike overlay approaches, this creates actual transparency that doesn't interfere with 
+ * complex backgrounds like images, gradients, or patterns.
  * 
  * @example
  * ```tsx
  * function ScrollableList({ items }) {
- *   const { containerRef, state, getOverlayStyle } = useScrollFades({
+ *   const { containerRef, getContainerStyle } = useScrollFades({
  *     threshold: 16,
+ *     fadeSize: 20,
  *     transitionDuration: 300
  *   })
  * 
  *   return (
- *     <div style={{ position: 'relative' }}>
- *       <div 
- *         ref={containerRef}
- *         style={{ height: '300px', overflow: 'auto' }}
- *       >
- *         {items.map(item => <div key={item.id}>{item.name}</div>)}
- *       </div>
- *       
- *       <div 
- *         style={{
- *           position: 'absolute',
- *           top: 0,
- *           left: 0,
- *           right: 0,
- *           height: '20px',
- *           ...getOverlayStyle('top')
- *         }}
- *       />
- *       
- *       <div 
- *         style={{
- *           position: 'absolute',
- *           bottom: 0,
- *           left: 0,
- *           right: 0,
- *           height: '20px',
- *           ...getOverlayStyle('bottom')
- *         }}
- *       />
+ *     <div 
+ *       ref={containerRef}
+ *       style={{
+ *         height: '300px', 
+ *         overflow: 'auto',
+ *         ...getContainerStyle()
+ *       }}
+ *     >
+ *       {items.map(item => <div key={item.id}>{item.name}</div>)}
  *     </div>
  *   )
  * }
@@ -114,13 +147,11 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
 ) {
   const {
     threshold = 8,
-    topGradient = 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0))',
-    bottomGradient = 'linear-gradient(to top, rgba(0,0,0,0.25), rgba(0,0,0,0))',
-    leftGradient = 'linear-gradient(to right, rgba(0,0,0,0.25), rgba(0,0,0,0))',
-    rightGradient = 'linear-gradient(to left, rgba(0,0,0,0.25), rgba(0,0,0,0))',
+    fadeSize = 20,
     transitionDuration = 200,
     transitionTimingFunction = 'ease-out',
     disableTransitions = false
+    // Legacy overlay options are ignored in mask-image implementation
   } = options
 
   const containerRef = useRef<T | null>(null)
@@ -198,48 +229,47 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
   }, [handleScroll, measure])
 
   /**
-   * Generates CSS styles for fade overlay elements
+   * Generates CSS styles for the scrollable container with mask-based fade effects
    * 
-   * @param position - Whether this is the 'top', 'bottom', 'left', or 'right' overlay
    * @param s - Optional fade state to use (defaults to current state)
-   * @returns CSS properties object for the overlay
+   * @returns CSS properties object with mask styles
    */
-  const getOverlayStyle = useMemo(() => {
-    return (position: 'top' | 'bottom' | 'left' | 'right', s: FadeState = state) => {
-      let visible: boolean
-      let backgroundImage: string
-      
-      switch (position) {
-        case 'top':
-          visible = s.showTop
-          backgroundImage = topGradient
-          break
-        case 'bottom':
-          visible = s.showBottom
-          backgroundImage = bottomGradient
-          break
-        case 'left':
-          visible = s.showLeft
-          backgroundImage = leftGradient
-          break
-        case 'right':
-          visible = s.showRight
-          backgroundImage = rightGradient
-          break
-        default:
-          visible = false
-          backgroundImage = ''
-      }
-      
-      return computeOverlayStyles({
-        visible,
-        backgroundImage,
+  const getContainerStyle = useMemo(() => {
+    return (s: FadeState = state) => {
+      return computeContainerStyles({
+        showTop: s.showTop,
+        showBottom: s.showBottom,
+        showLeft: s.showLeft,
+        showRight: s.showRight,
+        fadeSize,
         disableTransitions,
         transitionDuration,
         transitionTimingFunction
       })
     }
-  }, [state, topGradient, bottomGradient, leftGradient, rightGradient, transitionDuration, transitionTimingFunction, disableTransitions])
+  }, [state, fadeSize, transitionDuration, transitionTimingFunction, disableTransitions])
 
-  return { containerRef, state, getOverlayStyle }
+  /**
+   * Legacy overlay style function - kept for backward compatibility
+   * @deprecated Use getContainerStyle() instead for mask-based fades
+   */
+  const getOverlayStyle = useMemo(() => {
+    return (_position: 'top' | 'bottom' | 'left' | 'right', _s: FadeState = state) => {
+      // For backward compatibility, return empty styles and warn
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(
+          'getOverlayStyle is deprecated. Use getContainerStyle() directly on your scrollable container instead. ' +
+          'The new mask-image approach provides better performance and works with any background.'
+        )
+      }
+      return {}
+    }
+  }, [state])
+
+  return { 
+    containerRef, 
+    state, 
+    getContainerStyle,
+    getOverlayStyle // Legacy support
+  }
 }

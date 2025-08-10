@@ -18,6 +18,8 @@ export type FadeState = {
 export type UseScrollFadesOptions = {
   /** Distance in pixels from edge before fades appear/disappear. Default: 8 */
   threshold?: number
+  /** Size of fade effect in pixels for mask-image approach. Default: 20 */
+  fadeSize?: number
   /** CSS gradient for top fade overlay. Default: 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0))' */
   topGradient?: string
   /** CSS gradient for bottom fade overlay. Default: 'linear-gradient(to top, rgba(0,0,0,0.25), rgba(0,0,0,0))' */

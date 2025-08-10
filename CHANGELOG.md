@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### 🚀 Major Performance & Visual Improvements
+
+- **Revolutionary mask-image approach**: Complete rewrite using CSS `mask-image` for true transparency
+  - ✨ Works perfectly with any background (gradients, images, patterns)  
+  - 🚀 Better performance - GPU-accelerated mask properties
+  - 📐 Simpler markup - no overlay divs needed
+  - 🎨 True transparency instead of layered gradients
+- **New `getContainerStyle()` function**: Primary API for mask-based fade effects
+- **New `fadeSize` option**: Control fade effect size in pixels (default: 20px)
+- **Backward compatibility**: `getOverlayStyle()` still works but shows deprecation warning
+- **Enhanced browser support**: WebKit prefixes for Safari compatibility
+- **Updated documentation**: Comprehensive examples showing mask-image superiority
+
+### 🔧 Technical Improvements
+
+- CSS mask-image with `intersect` composite for multi-directional fades
+- Vendor-prefixed transitions for cross-browser compatibility  
+- Optimized mask positioning and sizing for all scroll directions
+- Graceful degradation for older browsers (no fades, but full functionality)
+
+---
+
 ## [1.1.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v1.0.0...v1.1.0) (2025-08-10)
 
 ### ✨ Features

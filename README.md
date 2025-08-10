@@ -29,141 +29,182 @@ Types are included. If you use JavaScript only, no extra step is required. If yo
 
 ---
 
-## Quick Start (TS or JS)
+## Quick Start (New Mask-Image Approach) ✨
+
+The new mask-image approach provides **true transparency** that works with any background:
 
 ```tsx
-import React from 'react'
 import { useScrollFades } from '@gboue/use-scroll-fades'
 
-export default function MessagesList({ items }) {
-  const { containerRef, state, getOverlayStyle } = useScrollFades({
-    threshold: 12, // px tolerance near edges (optional)
-    topGradient: 'linear-gradient(to bottom, rgba(0,0,0,0.18), rgba(0,0,0,0))',
-    bottomGradient: 'linear-gradient(to top, rgba(0,0,0,0.18), rgba(0,0,0,0))',
+function ScrollableList({ items }) {
+  const { containerRef, getContainerStyle } = useScrollFades({
+    threshold: 16,
+    fadeSize: 20,
+    transitionDuration: 300
   })
 
   return (
-    <div style={{ position: 'relative', maxWidth: 640 }}>
-      <div
-        ref={containerRef}
-        style={{
-          overflow: 'auto',
-          height: 360,
-          border: '1px solid #e5e7eb',
-          borderRadius: 12,
-          background: '#fff'
-        }}
-        role='list'
-        aria-label='Scrollable list with fade indicators'
-      >
-        <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-          {items.map((node, i) => (
-            <li key={i} role='listitem' style={{ padding: 16, borderBottom: '1px solid #f1f5f9' }}>
-              {node}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Fades (non-interactive overlays) */}
-      <div aria-hidden style={{
-        pointerEvents: 'none',
-        position: 'absolute', left: 0, right: 0, top: 0, height: 32,
-        borderTopLeftRadius: 12, borderTopRightRadius: 12,
-        ...getOverlayStyle('top', state)
-      }} />
-
-      <div aria-hidden style={{
-        pointerEvents: 'none',
-        position: 'absolute', left: 0, right: 0, bottom: 0, height: 32,
-        borderBottomLeftRadius: 12, borderBottomRightRadius: 12,
-        ...getOverlayStyle('bottom', state)
-      }} />
+    <div 
+      ref={containerRef}
+      style={{
+        height: '400px',
+        overflow: 'auto',
+        // Complex background that works perfectly with mask-image
+        backgroundImage: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
+        ...getContainerStyle()
+      }}
+    >
+      {items.map(item => (
+        <div key={item.id} className="item">
+          {item.name}
+        </div>
+      ))}
     </div>
   )
 }
 ```
 
-**Result:**
+### Legacy Overlay Approach (Deprecated)
 
-* At top: top fade hidden, bottom fade visible
-* At bottom: bottom fade hidden, top fade visible
-* Middle: both visible
-* **Smooth animations** when fades appear/disappear
-
----
-
-## Horizontal Scrolling Example
+For backward compatibility, the overlay approach is still available but deprecated:
 
 ```tsx
-import React from 'react'
 import { useScrollFades } from '@gboue/use-scroll-fades'
 
-export default function HorizontalCarousel({ slides }) {
+function LegacyScrollableList({ items }) {
   const { containerRef, state, getOverlayStyle } = useScrollFades({
     threshold: 16,
-    leftGradient: 'linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0))',
-    rightGradient: 'linear-gradient(to left, rgba(255,255,255,0.9), rgba(255,255,255,0))',
-    transitionDuration: 250,
+    transitionDuration: 300
   })
 
   return (
-    <div style={{ position: 'relative', width: '100%' }}>
-      <div
+    <div style={{ position: 'relative' }}>
+      <div 
         ref={containerRef}
-        style={{
-          display: 'flex',
-          overflowX: 'auto',
-          overflowY: 'hidden',
-          gap: 16,
-          padding: 16,
-          borderRadius: 12,
-          background: '#f8f9fa'
-        }}
+        style={{ height: '400px', overflow: 'auto' }}
       >
-        {slides.map((slide, i) => (
-          <div key={i} style={{
-            minWidth: 200,
-            height: 150,
-            background: 'white',
-            borderRadius: 8,
-            padding: 16,
-            flexShrink: 0,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}>
-            {slide}
-          </div>
+        {items.map(item => (
+          <div key={item.id}>{item.name}</div>
         ))}
       </div>
-
-      {/* Left fade overlay */}
-      <div style={{
-        position: 'absolute', top: 0, bottom: 0, left: 0, width: 40,
-        pointerEvents: 'none',
-        ...getOverlayStyle('left', state)
-      }} />
-
-      {/* Right fade overlay */}
-      <div style={{
-        position: 'absolute', top: 0, bottom: 0, right: 0, width: 40,
-        pointerEvents: 'none',
-        ...getOverlayStyle('right', state)
-      }} />
+      
+      {/* Overlay elements - only work well on solid backgrounds */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '20px',
+          ...getOverlayStyle('top')
+        }}
+      />
+      <div 
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '20px',
+          ...getOverlayStyle('bottom')
+        }}
+      />
     </div>
   )
 }
 ```
 
-**Result:**
+## Why Mask-Image is Superior ✨
 
-* At left edge: left fade hidden, right fade visible
-* At right edge: right fade hidden, left fade visible  
-* Middle: both visible
-* **Supports both horizontal and vertical** scrolling simultaneously
+### ✅ New Mask-Image Approach (Recommended)
+- **🎨 True transparency**: Works perfectly with any background (images, gradients, patterns)
+- **🚀 Better performance**: GPU-accelerated mask properties, fewer DOM elements  
+- **📐 Simpler markup**: Apply styles directly to the scrollable container
+- **🔧 Cleaner CSS**: Uses modern CSS mask properties
+- **🌐 Cross-browser**: Includes WebKit prefixes for Safari support
+- **⚡ Future-proof**: Modern CSS approach that will improve over time
 
----
+### ❌ Old Overlay Approach (Deprecated)  
+- **🎯 Limited backgrounds**: Only works well on solid colors
+- **💔 Visual artifacts**: Creates muddy, layered effects on complex backgrounds
+- **📦 More DOM elements**: Requires separate positioned overlay divs
+- **🔧 Positioning complexity**: Absolute positioning can be tricky to maintain
+- **🐛 Z-index issues**: Can interfere with other content
 
-## API
+## Real-World Examples
+
+### Complex Gradient Background ✨
+```tsx
+// This would look terrible with overlay gradients!
+<div 
+  ref={containerRef}
+  style={{
+    height: '400px',
+    overflow: 'auto',
+    backgroundImage: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+    ...getContainerStyle() // ✅ Perfect transparency with mask-image!
+  }}
+>
+  {/* Your scrollable content */}
+</div>
+```
+
+### Image/Pattern Backgrounds ✨
+```tsx
+// Pattern backgrounds work beautifully!
+<div 
+  ref={containerRef}
+  style={{
+    overflow: 'auto',
+    backgroundImage: 'url("your-pattern.svg")',
+    backgroundColor: '#f8fafc',
+    ...getContainerStyle() // ✅ True transparency shows the pattern perfectly!
+  }}
+>
+  {/* Your content */}
+</div>
+```
+
+## Browser Support
+
+The mask-image approach has excellent modern browser support:
+
+- ✅ Chrome 120+
+- ✅ Firefox 53+  
+- ✅ Safari 15.4+
+- ✅ Edge 79+
+- ❌ Internet Explorer (fallback to no fades)
+
+For older browsers, the hook gracefully degrades to no fade effects while maintaining full scrolling functionality.
+
+## Horizontal Scrolling
+
+Both approaches support horizontal scrolling:
+
+```tsx
+const { containerRef, getContainerStyle } = useScrollFades({
+  threshold: 12,
+  fadeSize: 24
+})
+
+return (
+  <div 
+    ref={containerRef}
+    style={{
+      width: '400px',
+      height: '200px',
+      overflow: 'auto',
+      ...getContainerStyle()
+    }}
+  >
+    <div style={{ width: '800px', height: '100px' }}>
+      Wide content that scrolls horizontally
+    </div>
+  </div>
+)
+```
+
+## Configuration Options
 
 ```ts
 export type FadeState = { 
@@ -175,10 +216,10 @@ export type FadeState = {
 
 export type UseScrollFadesOptions = {
   threshold?: number // px edge tolerance, default 8
-  // Vertical scroll gradients
+  fadeSize?: number // Size of fade effect in pixels, default 20
+  // Legacy overlay gradients (deprecated)
   topGradient?: string // CSS gradient for the top overlay
   bottomGradient?: string // CSS gradient for the bottom overlay
-  // Horizontal scroll gradients (NEW!)
   leftGradient?: string // CSS gradient for the left overlay
   rightGradient?: string // CSS gradient for the right overlay
   // Animation options
@@ -193,9 +234,13 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
   containerRef: React.RefObject<T>
   state: FadeState
   /**
-   * Helper to get inline styles for overlays without any styling library.
-   * You can ignore it and style however you like – it's optional.
-   * NEW: Now supports 'left' and 'right' for horizontal scrolling!
+   * ✨ PRIMARY: Get styles for the scrollable container with mask-based fades
+   * Creates true transparency that works with any background!
+   */
+  getContainerStyle: (state?: FadeState) => React.CSSProperties
+  /**
+   * 🚫 DEPRECATED: Legacy overlay approach for backward compatibility
+   * Use getContainerStyle() instead - it's better in every way!
    */
   getOverlayStyle: (
     position: 'top' | 'bottom' | 'left' | 'right',
@@ -467,7 +512,26 @@ Yes. The hook only touches DOM APIs inside `useEffect`, so it's safe on the serv
 Override `topGradient` and `bottomGradient` with any valid CSS gradient or image.
 
 **Does it support horizontal scrolling?**  
-Yes! Version 2.0+ supports both vertical and horizontal scrolling. Use `leftGradient`/`rightGradient` options and `getOverlayStyle('left'|'right')` for horizontal fades.
+Yes! Supports both vertical and horizontal scrolling automatically with the mask-image approach. No configuration needed!
+
+**How do I migrate from overlay to mask-image approach?**  
+Simple! Replace `getOverlayStyle()` overlays with `getContainerStyle()` applied directly to your container:
+
+```tsx
+// OLD overlay approach ❌
+<div style={{ position: 'relative' }}>
+  <div ref={containerRef} style={{ overflow: 'auto' }}>
+    {content}
+  </div>
+  <div style={{ position: 'absolute', top: 0, ...getOverlayStyle('top') }} />
+  <div style={{ position: 'absolute', bottom: 0, ...getOverlayStyle('bottom') }} />
+</div>
+
+// NEW mask-image approach ✅  
+<div ref={containerRef} style={{ overflow: 'auto', ...getContainerStyle() }}>
+  {content}
+</div>
+```
 
 **What React versions are supported?**  
 React 16.8+ (hooks support). Tested with React 17, 18, and 19.

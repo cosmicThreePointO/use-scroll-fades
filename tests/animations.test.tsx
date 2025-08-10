@@ -1,118 +1,91 @@
 import * as React from 'react'
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { useScrollFades } from '../src/useScrollFades'
 
 function AnimationTestComponent({ options = {} }: { options?: any }) {
-  const { containerRef, state, getOverlayStyle } = useScrollFades(options)
+  const { containerRef, state, getContainerStyle } = useScrollFades(options)
   
   return (
-    <div data-testid="wrapper">
-      <div
+    <div>
+      <div 
         ref={containerRef as any}
-        data-testid="container"
+        data-testid="scrollable-container"
         style={{
-          height: 200,
-          overflow: 'auto'
+          height: '200px',
+          overflow: 'auto',
+          ...getContainerStyle()
         }}
       >
-        <div style={{ height: 1000 }}>Long content</div>
+        <div style={{ height: '500px' }}>Long content for scrolling</div>
       </div>
-      <div 
-        data-testid="top-overlay" 
-        style={getOverlayStyle('top')}
-      />
-      <div 
-        data-testid="bottom-overlay" 
-        style={getOverlayStyle('bottom')}
-      />
-      <div data-testid="state">
-        {JSON.stringify(state)}
-      </div>
+      <div data-testid="state">{JSON.stringify(state)}</div>
     </div>
   )
 }
 
 describe('useScrollFades Animations', () => {
-  describe('default animation behavior', () => {
-    it('should include transition properties by default', () => {
+  describe('mask-image transitions', () => {
+    it('should include mask transition properties by default', () => {
       render(<AnimationTestComponent />)
       
-      const topOverlay = screen.getByTestId('top-overlay')
-      const bottomOverlay = screen.getByTestId('bottom-overlay')
+      const container = screen.getByTestId('scrollable-container')
       
-      // Check that transitions are applied
-      expect(topOverlay.style.transition).toBe('opacity 200ms ease-out')
-      expect(bottomOverlay.style.transition).toBe('opacity 200ms ease-out')
+      // Check that mask transitions are applied
+      expect(container.style.transition).toContain('mask 200ms ease-out')
+      expect(container.style.transition).toContain('-webkit-mask 200ms ease-out')
       
-      // Check vendor prefixes for cross-browser support (note: these are set as React style props)
-      // In real browsers, these would be normalized, but in tests we check the React style object
-      const computedStyles = (topOverlay as any).style
+      // Check vendor prefixes for cross-browser support
+      const computedStyles = (container as any).style
       expect(computedStyles.WebkitTransition).toBeDefined()
       expect(computedStyles.MozTransition).toBeDefined()
       expect(computedStyles.msTransition).toBeDefined()
     })
 
-    it('should use opacity instead of display for smooth transitions', () => {
+    it('should set mask-image properties for fade effects', () => {
       render(<AnimationTestComponent />)
       
-      const topOverlay = screen.getByTestId('top-overlay')
-      const bottomOverlay = screen.getByTestId('bottom-overlay')
+      const container = screen.getByTestId('scrollable-container')
       
-      // Should use opacity, not display none/block
-      expect(topOverlay.style.opacity).toBe('0') // Hidden initially
-      expect(bottomOverlay.style.opacity).toBe('0') // Hidden initially
-      expect(topOverlay.style.display).toBe('') // Not set (so it's visible in DOM)
-      expect(bottomOverlay.style.display).toBe('') // Not set (so it's visible in DOM)
+      // Should have mask properties
+      expect(container.style.maskImage).toBeDefined()
+      expect((container as any).style.WebkitMaskImage).toBeDefined()
+      expect(container.style.maskComposite).toBe('intersect')
+      expect((container as any).style.WebkitMaskComposite).toBe('source-in')
+      expect(container.style.maskRepeat).toBe('no-repeat')
+      expect(container.style.maskSize).toBe('100% 100%, 100% 100%')
     })
 
-    it('should always set pointerEvents to none to prevent interaction', () => {
+    it('should use linear gradients in mask-image for transparency', () => {
       render(<AnimationTestComponent />)
       
-      const topOverlay = screen.getByTestId('top-overlay')
-      const bottomOverlay = screen.getByTestId('bottom-overlay')
+      const container = screen.getByTestId('scrollable-container')
       
-      expect(topOverlay.style.pointerEvents).toBe('none')
-      expect(bottomOverlay.style.pointerEvents).toBe('none')
+      // Should contain linear gradient masks
+      expect(container.style.maskImage).toContain('linear-gradient(to bottom')
+      expect(container.style.maskImage).toContain('linear-gradient(to right')
+      expect(container.style.maskImage).toContain('transparent')
+      expect(container.style.maskImage).toContain('black')
     })
   })
 
-  describe('custom animation options', () => {
-    it('should apply custom transition duration', () => {
+  describe('custom transition timing', () => {
+    it('should respect custom transition duration', () => {
       const options = { transitionDuration: 500 }
       render(<AnimationTestComponent options={options} />)
       
-      const topOverlay = screen.getByTestId('top-overlay')
-      expect(topOverlay.style.transition).toBe('opacity 500ms ease-out')
+      const container = screen.getByTestId('scrollable-container')
+      
+      expect(container.style.transition).toContain('mask 500ms ease-out')
     })
 
-    it('should apply custom timing function', () => {
-      const options = { transitionTimingFunction: 'ease-in-out' }
+    it('should respect custom timing function', () => {
+      const options = { transitionTimingFunction: 'steps(4, end)' }
       render(<AnimationTestComponent options={options} />)
       
-      const topOverlay = screen.getByTestId('top-overlay')
-      expect(topOverlay.style.transition).toBe('opacity 200ms ease-in-out')
-    })
+      const container = screen.getByTestId('scrollable-container')
 
-    it('should apply both custom duration and timing function', () => {
-      const options = { 
-        transitionDuration: 300,
-        transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
-      }
-      render(<AnimationTestComponent options={options} />)
-      
-      const topOverlay = screen.getByTestId('top-overlay')
-      expect(topOverlay.style.transition).toBe('opacity 300ms cubic-bezier(0.4, 0, 0.2, 1)')
-    })
-
-    it('should support complex timing functions', () => {
-      const options = { 
-        transitionTimingFunction: 'steps(4, end)'
-      }
-      render(<AnimationTestComponent options={options} />)
-      
-      const topOverlay = screen.getByTestId('top-overlay')
-      expect(topOverlay.style.transition).toBe('opacity 200ms steps(4, end)')
+      expect(container.style.transition).toContain('mask 200ms steps(4, end)')
     })
   })
 
@@ -121,118 +94,110 @@ describe('useScrollFades Animations', () => {
       const options = { disableTransitions: true }
       render(<AnimationTestComponent options={options} />)
       
-      const topOverlay = screen.getByTestId('top-overlay')
-      const bottomOverlay = screen.getByTestId('bottom-overlay')
+      const container = screen.getByTestId('scrollable-container')
       
       // Should not have transition properties
-      expect(topOverlay.style.transition).toBe('')
-      expect((topOverlay as any).style.WebkitTransition).toBeUndefined()
-      expect((topOverlay as any).style.MozTransition).toBeUndefined()
-      expect((topOverlay as any).style.msTransition).toBeUndefined()
-      
-      expect(bottomOverlay.style.transition).toBe('')
+      expect(container.style.transition).toBe('')
+      expect((container as any).style.WebkitTransition).toBeUndefined()
+      expect((container as any).style.MozTransition).toBeUndefined()
+      expect((container as any).style.msTransition).toBeUndefined()
     })
 
-    it('should still use opacity when transitions are disabled', () => {
+    it('should still apply mask properties when transitions are disabled', () => {
       const options = { disableTransitions: true }
       render(<AnimationTestComponent options={options} />)
       
-      const topOverlay = screen.getByTestId('top-overlay')
+      const container = screen.getByTestId('scrollable-container')
       
-      // Should still use opacity-based visibility
-      expect(topOverlay.style.opacity).toBe('0')
-      expect(topOverlay.style.pointerEvents).toBe('none')
+      // Should still have mask properties
+      expect(container.style.maskImage).toBeDefined()
+      expect(container.style.maskComposite).toBe('intersect')
     })
   })
 
   describe('cross-browser vendor prefixes', () => {
-    it('should include all major vendor prefixes', () => {
+    it('should include all major vendor prefixes for masks', () => {
       render(<AnimationTestComponent />)
       
-      const topOverlay = screen.getByTestId('top-overlay')
+      const container = screen.getByTestId('scrollable-container')
       
-      // Standard
-      expect(topOverlay.style.transition).toBe('opacity 200ms ease-out')
+      // Standard mask properties
+      expect(container.style.maskImage).toBeDefined()
+      expect(container.style.maskComposite).toBe('intersect')
       
       // Check that vendor prefixes are set as React style properties
-      const computedStyles = (topOverlay as any).style
+      const computedStyles = (container as any).style
       
       // Webkit (Safari, Chrome, newer Edge)
+      expect(computedStyles.WebkitMaskImage).toBeDefined()
+      expect(computedStyles.WebkitMaskComposite).toBe('source-in')
+      expect(computedStyles.WebkitMaskRepeat).toBe('no-repeat')
+      
+      // Transition prefixes
       expect(computedStyles.WebkitTransition).toBeDefined()
-      
-      // Mozilla (Firefox)  
       expect(computedStyles.MozTransition).toBeDefined()
-      
-      // Microsoft (IE, older Edge)
       expect(computedStyles.msTransition).toBeDefined()
     })
   })
 
-  describe('animation state changes', () => {
-    it('should change opacity when state changes', () => {
+  describe('fadeSize configuration', () => {
+    it('should use custom fade size', () => {
+      const options = { fadeSize: 32 }
+      render(<AnimationTestComponent options={options} />)
+      
+      const container = screen.getByTestId('scrollable-container')
+      
+      // Should contain the custom fade size in mask gradients
+      expect(container.style.maskImage).toContain('32px')
+      expect(container.style.maskImage).toContain('calc(100% - 32px)')
+    })
+
+    it('should default to 20px fade size', () => {
       render(<AnimationTestComponent />)
       
-      const topOverlay = screen.getByTestId('top-overlay')
+      const container = screen.getByTestId('scrollable-container')
       
-      // Initially hidden (showTop: false)
-      expect(topOverlay.style.opacity).toBe('0')
-      
-      // Test with visible state by using getOverlayStyle directly
-      const component = screen.getByTestId('wrapper')
-      
-      // The hook would update opacity to 1 when showTop becomes true
-      // This is tested in the main hook tests, here we verify the style function
-      expect(topOverlay.style.backgroundImage).toBeTruthy()
+      // Should contain default 20px fade size
+      expect(container.style.maskImage).toContain('20px')
+      expect(container.style.maskImage).toContain('calc(100% - 20px)')
     })
   })
 
-  describe('animation performance', () => {
-    it('should only animate opacity for better performance', () => {
-      render(<AnimationTestComponent />)
+  describe('backward compatibility', () => {
+    it('should warn when using deprecated getOverlayStyle', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
       
-      const topOverlay = screen.getByTestId('top-overlay')
+      function LegacyComponent() {
+        const { getOverlayStyle } = useScrollFades()
+        const overlayStyle = getOverlayStyle('top')
+        return <div data-testid="legacy" style={overlayStyle}>Legacy</div>
+      }
       
-      // Should only transition opacity, not other expensive properties
-      expect(topOverlay.style.transition).toBe('opacity 200ms ease-out')
-      expect(topOverlay.style.transition).not.toContain('transform')
-      expect(topOverlay.style.transition).not.toContain('width')
-      expect(topOverlay.style.transition).not.toContain('height')
+      render(<LegacyComponent />)
+      
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('getOverlayStyle is deprecated')
+      )
+      
+      consoleSpy.mockRestore()
     })
 
-    it('should use GPU-friendly properties', () => {
-      render(<AnimationTestComponent />)
+    it('should return empty styles from deprecated getOverlayStyle', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
       
-      const topOverlay = screen.getByTestId('top-overlay')
+      function LegacyComponent() {
+        const { getOverlayStyle } = useScrollFades()
+        const overlayStyle = getOverlayStyle('top')
+        return <div data-testid="legacy" style={overlayStyle}>Legacy</div>
+      }
       
-      // Opacity is GPU-accelerated and performant
-      expect(topOverlay.style.opacity).toBeDefined()
-      expect(topOverlay.style.pointerEvents).toBe('none') // Prevents interaction overhead
-    })
-  })
-
-  describe('edge cases', () => {
-    it('should handle zero duration gracefully', () => {
-      const options = { transitionDuration: 0 }
-      render(<AnimationTestComponent options={options} />)
+      render(<LegacyComponent />)
       
-      const topOverlay = screen.getByTestId('top-overlay')
-      expect(topOverlay.style.transition).toBe('opacity 0ms ease-out')
-    })
-
-    it('should handle very long durations', () => {
-      const options = { transitionDuration: 10000 }
-      render(<AnimationTestComponent options={options} />)
+      const legacy = screen.getByTestId('legacy')
+      // Should have no meaningful styles applied
+      expect(Object.keys(legacy.style)).toHaveLength(0)
       
-      const topOverlay = screen.getByTestId('top-overlay')
-      expect(topOverlay.style.transition).toBe('opacity 10000ms ease-out')
-    })
-
-    it('should handle empty timing function gracefully', () => {
-      const options = { transitionTimingFunction: '' }
-      render(<AnimationTestComponent options={options} />)
-      
-      const topOverlay = screen.getByTestId('top-overlay')
-      expect(topOverlay.style.transition).toBe('opacity 200ms')
+      consoleSpy.mockRestore()
     })
   })
 })

@@ -1,10 +1,14 @@
 # use-scroll-fades
 
-Library-agnostic React hook that adds top/bottom **scroll-fade indicators** to any scrollable container. No CSS frameworks, no runtime dependencies. Works with plain CSS-in-JS, inline styles, or your existing styling solution.
+[![npm version](https://img.shields.io/npm/v/@gboue/use-scroll-fades)](https://www.npmjs.com/package/@gboue/use-scroll-fades)
+[![npm downloads](https://img.shields.io/npm/dm/@gboue/use-scroll-fades)](https://www.npmjs.com/package/@gboue/use-scroll-fades)
 
-* **Top fade hidden at start** (when scrolled to top)
-* **Bottom fade hidden at end** (when scrolled to bottom)
-* **Both fades visible in the middle**
+Library-agnostic React hook that adds **scroll-fade indicators** to any scrollable container. Supports both vertical and horizontal scrolling with smooth animations. No CSS frameworks, no runtime dependencies. Works with plain CSS-in-JS, inline styles, or your existing styling solution.
+
+* **Vertical scrolling**: Top/bottom fades for vertical content
+* **Horizontal scrolling**: Left/right fades for horizontal content  
+* **Smart hiding**: Fades automatically hide at scroll edges
+* **Smooth animations**: Built-in CSS transitions with cross-browser support
 * Zero external deps, React only
 * Ships with TypeScript definitions
 
@@ -14,11 +18,11 @@ Library-agnostic React hook that adds top/bottom **scroll-fade indicators** to a
 
 ```bash
 # npm
-npm i use-scroll-fades
+npm i @gboue/use-scroll-fades
 # or
-yarn add use-scroll-fades
+yarn add @gboue/use-scroll-fades
 # or
-pnpm add use-scroll-fades
+pnpm add @gboue/use-scroll-fades
 ```
 
 Types are included. If you use JavaScript only, no extra step is required. If you prefer separate type installs in some setups, the package already contains `*.d.ts` files.
@@ -29,7 +33,7 @@ Types are included. If you use JavaScript only, no extra step is required. If yo
 
 ```tsx
 import React from 'react'
-import { useScrollFades } from 'use-scroll-fades'
+import { useScrollFades } from '@gboue/use-scroll-fades'
 
 export default function MessagesList({ items }) {
   const { containerRef, state, getOverlayStyle } = useScrollFades({
@@ -89,15 +93,95 @@ export default function MessagesList({ items }) {
 
 ---
 
+## Horizontal Scrolling Example
+
+```tsx
+import React from 'react'
+import { useScrollFades } from '@gboue/use-scroll-fades'
+
+export default function HorizontalCarousel({ slides }) {
+  const { containerRef, state, getOverlayStyle } = useScrollFades({
+    threshold: 16,
+    leftGradient: 'linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0))',
+    rightGradient: 'linear-gradient(to left, rgba(255,255,255,0.9), rgba(255,255,255,0))',
+    transitionDuration: 250,
+  })
+
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      <div
+        ref={containerRef}
+        style={{
+          display: 'flex',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          gap: 16,
+          padding: 16,
+          borderRadius: 12,
+          background: '#f8f9fa'
+        }}
+      >
+        {slides.map((slide, i) => (
+          <div key={i} style={{
+            minWidth: 200,
+            height: 150,
+            background: 'white',
+            borderRadius: 8,
+            padding: 16,
+            flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            {slide}
+          </div>
+        ))}
+      </div>
+
+      {/* Left fade overlay */}
+      <div style={{
+        position: 'absolute', top: 0, bottom: 0, left: 0, width: 40,
+        pointerEvents: 'none',
+        ...getOverlayStyle('left', state)
+      }} />
+
+      {/* Right fade overlay */}
+      <div style={{
+        position: 'absolute', top: 0, bottom: 0, right: 0, width: 40,
+        pointerEvents: 'none',
+        ...getOverlayStyle('right', state)
+      }} />
+    </div>
+  )
+}
+```
+
+**Result:**
+
+* At left edge: left fade hidden, right fade visible
+* At right edge: right fade hidden, left fade visible  
+* Middle: both visible
+* **Supports both horizontal and vertical** scrolling simultaneously
+
+---
+
 ## API
 
 ```ts
-export type FadeState = { showTop: boolean, showBottom: boolean }
+export type FadeState = { 
+  showTop: boolean,    // Vertical scroll: top fade visibility
+  showBottom: boolean, // Vertical scroll: bottom fade visibility  
+  showLeft: boolean,   // Horizontal scroll: left fade visibility
+  showRight: boolean   // Horizontal scroll: right fade visibility
+}
 
 export type UseScrollFadesOptions = {
   threshold?: number // px edge tolerance, default 8
+  // Vertical scroll gradients
   topGradient?: string // CSS gradient for the top overlay
   bottomGradient?: string // CSS gradient for the bottom overlay
+  // Horizontal scroll gradients (NEW!)
+  leftGradient?: string // CSS gradient for the left overlay
+  rightGradient?: string // CSS gradient for the right overlay
+  // Animation options
   transitionDuration?: number // Fade transition duration in ms, default 200
   transitionTimingFunction?: string // CSS timing function, default 'ease-out'
   disableTransitions?: boolean // Disable animations, default false
@@ -111,9 +195,10 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
   /**
    * Helper to get inline styles for overlays without any styling library.
    * You can ignore it and style however you like – it's optional.
+   * NEW: Now supports 'left' and 'right' for horizontal scrolling!
    */
   getOverlayStyle: (
-    position: 'top' | 'bottom',
+    position: 'top' | 'bottom' | 'left' | 'right',
     state?: FadeState
   ) => React.CSSProperties
 }
@@ -133,7 +218,7 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
 The hook includes smooth fade animations by default. You can customize or disable them:
 
 ```tsx
-import { useScrollFades } from 'use-scroll-fades'
+import { useScrollFades } from '@gboue/use-scroll-fades'
 
 // Default smooth animations (200ms ease-out)
 const { containerRef, state, getOverlayStyle } = useScrollFades()
@@ -177,7 +262,7 @@ All standard CSS timing functions are supported across modern browsers:
 
 ```tsx
 import React from 'react'
-import { useScrollFades } from 'use-scroll-fades'
+import { useScrollFades } from '@gboue/use-scroll-fades'
 import './ScrollFades.css' // Your custom CSS
 
 export default function CustomStyledList({ items }) {
@@ -204,7 +289,7 @@ export default function CustomStyledList({ items }) {
 ```tsx
 import React from 'react'
 import styled from 'styled-components'
-import { useScrollFades } from 'use-scroll-fades'
+import { useScrollFades } from '@gboue/use-scroll-fades'
 
 const Container = styled.div`
   position: relative;
@@ -275,7 +360,7 @@ export default function StyledList({ items }) {
 ```tsx
 import React from 'react'
 import { FixedSizeList as List } from 'react-window'
-import { useScrollFades } from 'use-scroll-fades'
+import { useScrollFades } from '@gboue/use-scroll-fades'
 
 export default function VirtualizedList({ items }) {
   const { containerRef, state, getOverlayStyle } = useScrollFades()
@@ -380,6 +465,9 @@ Yes. The hook only touches DOM APIs inside `useEffect`, so it's safe on the serv
 
 **How do I theme the gradients?**  
 Override `topGradient` and `bottomGradient` with any valid CSS gradient or image.
+
+**Does it support horizontal scrolling?**  
+Yes! Version 2.0+ supports both vertical and horizontal scrolling. Use `leftGradient`/`rightGradient` options and `getOverlayStyle('left'|'right')` for horizontal fades.
 
 **What React versions are supported?**  
 React 16.8+ (hooks support). Tested with React 17, 18, and 19.

@@ -116,13 +116,20 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
     threshold = 8,
     topGradient = 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0))',
     bottomGradient = 'linear-gradient(to top, rgba(0,0,0,0.25), rgba(0,0,0,0))',
+    leftGradient = 'linear-gradient(to right, rgba(0,0,0,0.25), rgba(0,0,0,0))',
+    rightGradient = 'linear-gradient(to left, rgba(0,0,0,0.25), rgba(0,0,0,0))',
     transitionDuration = 200,
     transitionTimingFunction = 'ease-out',
     disableTransitions = false
   } = options
 
   const containerRef = useRef<T | null>(null)
-  const [state, setState] = useState<FadeState>({ showTop: false, showBottom: false })
+  const [state, setState] = useState<FadeState>({ 
+    showTop: false, 
+    showBottom: false, 
+    showLeft: false, 
+    showRight: false 
+  })
   const frame = useRef<number | null>(null)
 
   /**
@@ -132,9 +139,20 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
     const el = containerRef.current
     if (!el) return
     
-    const next = computeFadeState(el.scrollTop, el.scrollHeight, el.clientHeight, threshold)
+    const next = computeFadeState(
+      el.scrollTop, 
+      el.scrollHeight, 
+      el.clientHeight,
+      el.scrollLeft,
+      el.scrollWidth,
+      el.clientWidth,
+      threshold
+    )
     setState(prev => 
-      prev.showTop === next.showTop && prev.showBottom === next.showBottom 
+      prev.showTop === next.showTop && 
+      prev.showBottom === next.showBottom &&
+      prev.showLeft === next.showLeft &&
+      prev.showRight === next.showRight
         ? prev 
         : next
     )
@@ -182,14 +200,36 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
   /**
    * Generates CSS styles for fade overlay elements
    * 
-   * @param position - Whether this is the 'top' or 'bottom' overlay
+   * @param position - Whether this is the 'top', 'bottom', 'left', or 'right' overlay
    * @param s - Optional fade state to use (defaults to current state)
    * @returns CSS properties object for the overlay
    */
   const getOverlayStyle = useMemo(() => {
-    return (position: 'top' | 'bottom', s: FadeState = state) => {
-      const visible = position === 'top' ? s.showTop : s.showBottom
-      const backgroundImage = position === 'top' ? topGradient : bottomGradient
+    return (position: 'top' | 'bottom' | 'left' | 'right', s: FadeState = state) => {
+      let visible: boolean
+      let backgroundImage: string
+      
+      switch (position) {
+        case 'top':
+          visible = s.showTop
+          backgroundImage = topGradient
+          break
+        case 'bottom':
+          visible = s.showBottom
+          backgroundImage = bottomGradient
+          break
+        case 'left':
+          visible = s.showLeft
+          backgroundImage = leftGradient
+          break
+        case 'right':
+          visible = s.showRight
+          backgroundImage = rightGradient
+          break
+        default:
+          visible = false
+          backgroundImage = ''
+      }
       
       return computeOverlayStyles({
         visible,
@@ -199,7 +239,7 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
         transitionTimingFunction
       })
     }
-  }, [state, topGradient, bottomGradient, transitionDuration, transitionTimingFunction, disableTransitions])
+  }, [state, topGradient, bottomGradient, leftGradient, rightGradient, transitionDuration, transitionTimingFunction, disableTransitions])
 
   return { containerRef, state, getOverlayStyle }
 }

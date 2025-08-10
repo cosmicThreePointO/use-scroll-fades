@@ -65,7 +65,7 @@ describe('useScrollFades', () => {
       render(<TestComponent />)
       
       const state = JSON.parse(screen.getByTestId('state').textContent!)
-      expect(state).toEqual({ showTop: false, showBottom: false })
+      expect(state).toEqual({ showTop: false, showBottom: false, showLeft: false, showRight: false })
     })
 
     it('should apply default gradients', () => {

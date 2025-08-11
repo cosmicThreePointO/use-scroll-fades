@@ -2,6 +2,7 @@ import React from 'react';
 import Hero from './components/Hero';
 import ScrollExample from './components/ScrollExample';
 import CodeExample from './components/CodeExample';
+import ColorPickerDemo from './components/ColorPickerDemo';
 import Footer from './components/Footer';
 import ScrollIndicator from './components/ScrollIndicator';
 import BackToTop from './components/BackToTop';
@@ -16,6 +17,19 @@ const examples = [
     content: Array.from({ length: 50 }, (_, i) => `Item ${i + 1}: This is a scrollable item with fade effects`),
     height: '400px',
     type: 'vertical'
+  },
+  {
+    id: 'colored',
+    title: 'Colored Gradient Fades',
+    description: 'Custom blue gradient fades that match the content theme and provide subtle visual enhancement',
+    content: Array.from({ length: 40 }, (_, i) => ({
+      title: `Feature ${i + 1}`,
+      description: `This demonstrates colored fade effects with custom gradient colors that complement the design.`,
+      category: i % 3 === 0 ? 'Premium' : i % 3 === 1 ? 'Standard' : 'Basic'
+    })),
+    height: '450px',
+    type: 'colored',
+    fadeColor: 'rgba(0, 122, 255, 0.2)' // Custom blue fade
   },
   {
     id: 'slideshow',
@@ -110,6 +124,13 @@ function App() {
         </section>
 
         <CodeExample />
+        
+        <section className="color-demo-section">
+          <div className="container">
+            <ColorPickerDemo />
+          </div>
+        </section>
+        
         <Footer />
         <BackToTop />
       </div>

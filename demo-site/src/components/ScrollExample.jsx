@@ -1,13 +1,42 @@
-import React from 'react';
-import { useScrollFades } from '@gboue/use-scroll-fades';
+import React, { useEffect } from 'react';
+import { useScrollFades, generateColoredFadeCSS } from '@gboue/use-scroll-fades';
 import { useScrollHijack } from '../hooks/useScrollHijack';
 
+// Inject CSS for colored fades once
+let cssInjected = false;
+const injectColoredFadeCSS = () => {
+  if (cssInjected || typeof document === 'undefined') return;
+  
+  const existingStyle = document.getElementById('scroll-fades-colored-css');
+  if (existingStyle) return;
+
+  const style = document.createElement('style');
+  style.id = 'scroll-fades-colored-css';
+  style.textContent = generateColoredFadeCSS();
+  document.head.appendChild(style);
+  cssInjected = true;
+};
+
 function ScrollExample({ example, reverse }) {
-  const { containerRef: fadeRef, getContainerStyle, accessibility } = useScrollFades({
+  // Inject CSS for colored fades if needed
+  useEffect(() => {
+    if (example.fadeColor) {
+      injectColoredFadeCSS();
+    }
+  }, [example.fadeColor]);
+
+  const { 
+    containerRef: fadeRef, 
+    getContainerStyle, 
+    getGradientProperties, 
+    getColoredFadeClass, 
+    accessibility 
+  } = useScrollFades({
     threshold: 8,
     fadeSize: 20,
     transitionDuration: 300,
-    transitionTimingFunction: 'ease-out'
+    transitionTimingFunction: 'ease-out',
+    fadeColor: example.fadeColor // Use custom fade color if provided
   });
 
   // Log accessibility information (for development/demo purposes)
@@ -31,6 +60,23 @@ function ScrollExample({ example, reverse }) {
 
   const renderContent = () => {
     switch (example.type) {
+      case 'colored':
+        return (
+          <div className="colored-content">
+            {example.content.map((item, index) => (
+              <div key={index} className="colored-item">
+                <div className="item-badge">
+                  <span className={`category-${item.category.toLowerCase()}`}>
+                    {item.category}
+                  </span>
+                </div>
+                <h4 className="colored-title">{item.title}</h4>
+                <p className="colored-description">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        );
+
       case 'slideshow':
         return (
           <div className="slideshow-content">
@@ -94,10 +140,20 @@ function ScrollExample({ example, reverse }) {
   };
 
   const getScrollStyle = () => {
-    return {
+    const baseStyles = {
       height: example.height,
       ...getContainerStyle()
     };
+    
+    // Add gradient properties and class for colored examples
+    if (example.fadeColor) {
+      return {
+        ...baseStyles,
+        ...getGradientProperties()
+      };
+    }
+    
+    return baseStyles;
   };
 
   return (
@@ -111,7 +167,7 @@ function ScrollExample({ example, reverse }) {
         <div 
           ref={combineRefs}
           style={getScrollStyle()}
-          className={`scroll-container ${example.type}-scroll ${isHijacked ? 'active-hijack' : ''}`}
+          className={`scroll-container ${example.type}-scroll ${isHijacked ? 'active-hijack' : ''} ${example.fadeColor ? getColoredFadeClass() : ''}`}
         >
           {renderContent()}
         </div>

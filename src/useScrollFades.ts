@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { FadeState, UseScrollFadesOptions } from './types'
+import type { FadeState, UseScrollFadesOptions, GradientColors } from './types'
 import { computeFadeState } from './computeFadeState'
 import { prefersReducedMotion, watchMotionPreference, getBrowserCapabilities } from './utils/accessibility'
+import { generateFadeGradientProperties, COLORED_FADE_CLASS } from './utils/gradientStyles'
 
 /**
  * Creates transition CSS value with vendor prefixes for cross-browser compatibility
@@ -26,6 +27,14 @@ const applyVendorPrefixedTransitions = (
   ;(styles as any).WebkitTransition = transitionValue // Safari support
   ;(styles as any).MozTransition = transitionValue // Firefox support  
   ;(styles as any).msTransition = transitionValue // IE support (fallback)
+}
+
+/**
+ * Default gradient colors for fade effects
+ */
+const DEFAULT_GRADIENT_COLORS: GradientColors = {
+  from: 'rgba(0,0,0,0.15)',
+  to: 'transparent'
 }
 
 /**
@@ -60,7 +69,30 @@ const createMaskImage = (
 }
 
 /**
- * Computes container styles with mask-based fade effects
+ * Creates colored gradient backgrounds for fade effects
+ * @param colors - Gradient color configuration
+ * @param direction - CSS gradient direction
+ * @returns CSS gradient string
+ */
+const createColoredGradient = (colors: GradientColors, direction: string): string => {
+  return `linear-gradient(${direction}, ${colors.from}, ${colors.to})`
+}
+
+/**
+ * Resolves gradient colors with fallbacks and fadeColor override
+ * @param colors - Specific direction colors
+ * @param fadeColor - Global fade color override
+ * @returns Resolved gradient colors
+ */
+const resolveGradientColors = (colors?: GradientColors, fadeColor?: string): GradientColors => {
+  if (fadeColor) {
+    return { from: fadeColor, to: 'transparent' }
+  }
+  return colors || DEFAULT_GRADIENT_COLORS
+}
+
+/**
+ * Computes container styles with mask-based fade effects and colored gradients
  * @param params - Style computation parameters
  * @returns React CSS properties object
  */
@@ -76,6 +108,10 @@ const computeContainerStyles = (params: {
   shouldApplyEffects: boolean
   maskImageSupported: boolean
   maskImageFallback: 'disable' | 'ignore'
+  topColors: GradientColors
+  bottomColors: GradientColors
+  leftColors: GradientColors
+  rightColors: GradientColors
 }): React.CSSProperties => {
   const { 
     showTop, 
@@ -88,7 +124,11 @@ const computeContainerStyles = (params: {
     transitionTimingFunction,
     shouldApplyEffects,
     maskImageSupported,
-    maskImageFallback
+    maskImageFallback,
+    topColors,
+    bottomColors,
+    leftColors,
+    rightColors
   } = params
   
   // If effects should be disabled, return empty styles
@@ -113,18 +153,34 @@ const computeContainerStyles = (params: {
   
   const maskImage = createMaskImage(showTop, showBottom, showLeft, showRight, fadeSize)
   
+  // Create colored background gradients for visible fades
+  const gradientLayers: string[] = []
+  if (showTop) gradientLayers.push(createColoredGradient(topColors, 'to bottom'))
+  if (showBottom) gradientLayers.push(createColoredGradient(bottomColors, 'to top'))
+  if (showLeft) gradientLayers.push(createColoredGradient(leftColors, 'to right'))
+  if (showRight) gradientLayers.push(createColoredGradient(rightColors, 'to left'))
+  
   const baseStyles: React.CSSProperties = {
+    // Mask properties for transparency
     maskImage,
-    WebkitMaskImage: maskImage, // Safari support
+    WebkitMaskImage: maskImage,
     maskComposite: 'intersect',
-    WebkitMaskComposite: 'source-in', // Safari uses different syntax
+    WebkitMaskComposite: 'source-in',
     maskRepeat: 'no-repeat',
     WebkitMaskRepeat: 'no-repeat',
     maskSize: '100% 100%, 100% 100%',
     WebkitMaskSize: '100% 100%, 100% 100%',
     maskPosition: '0 0, 0 0',
-    WebkitMaskPosition: '0 0, 0 0'
+    WebkitMaskPosition: '0 0, 0 0',
+    // Position relative for pseudo-elements
+    position: 'relative'
   } as React.CSSProperties
+  
+  // Add gradient backgrounds as CSS custom properties for pseudo-elements
+  if (gradientLayers.length > 0) {
+    ;(baseStyles as any)['--fade-gradients'] = gradientLayers.join(', ')
+    ;(baseStyles as any)['--fade-gradient-count'] = gradientLayers.length.toString()
+  }
   
   if (!disableTransitions) {
     const transitionValue = createTransitionValue(transitionDuration, transitionTimingFunction)
@@ -180,9 +236,34 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
     disableTransitions = false,
     respectReducedMotion = true,
     respectBrowserSupport = true,
-    maskImageFallback = 'disable'
-    // Legacy overlay options are ignored in mask-image implementation
+    maskImageFallback = 'disable',
+    topColors,
+    bottomColors,
+    leftColors,
+    rightColors,
+    fadeColor,
+    // Legacy options (deprecated)
+    topGradient,
+    bottomGradient,
+    leftGradient,
+    rightGradient
   } = options
+  
+  // Resolve gradient colors with fallbacks
+  const resolvedTopColors = resolveGradientColors(topColors, fadeColor)
+  const resolvedBottomColors = resolveGradientColors(bottomColors, fadeColor)
+  const resolvedLeftColors = resolveGradientColors(leftColors, fadeColor)
+  const resolvedRightColors = resolveGradientColors(rightColors, fadeColor)
+  
+  // Warn about deprecated options
+  if (process.env.NODE_ENV !== 'production') {
+    if (topGradient || bottomGradient || leftGradient || rightGradient) {
+      console.warn(
+        'use-scroll-fades: topGradient, bottomGradient, leftGradient, and rightGradient are deprecated. ' +
+        'Use topColors, bottomColors, leftColors, rightColors, or fadeColor instead.'
+      )
+    }
+  }
 
   const containerRef = useRef<T | null>(null)
   const [state, setState] = useState<FadeState>({ 
@@ -304,7 +385,7 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
    * Generates CSS styles for the scrollable container with mask-based fade effects
    * 
    * @param s - Optional fade state to use (defaults to current state)
-   * @returns CSS properties object with mask styles
+   * @returns CSS properties object with mask styles and gradient colors
    */
   const getContainerStyle = useMemo(() => {
     return (s: FadeState = state) => {
@@ -319,10 +400,14 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
         transitionTimingFunction,
         shouldApplyEffects,
         maskImageSupported: browserCapabilities.supportsMaskImage,
-        maskImageFallback
+        maskImageFallback,
+        topColors: resolvedTopColors,
+        bottomColors: resolvedBottomColors,
+        leftColors: resolvedLeftColors,
+        rightColors: resolvedRightColors
       })
     }
-  }, [state, fadeSize, shouldDisableTransitions, transitionDuration, transitionTimingFunction, shouldApplyEffects, browserCapabilities.supportsMaskImage, maskImageFallback])
+  }, [state, fadeSize, shouldDisableTransitions, transitionDuration, transitionTimingFunction, shouldApplyEffects, browserCapabilities.supportsMaskImage, maskImageFallback, resolvedTopColors, resolvedBottomColors, resolvedLeftColors, resolvedRightColors])
 
   /**
    * Legacy overlay style function - kept for backward compatibility
@@ -341,11 +426,48 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
     }
   }, [state])
 
+  /**
+   * Gets CSS custom properties for colored gradient fades
+   * Use this with getColoredFadeClass() for colored fade effects
+   * 
+   * @param s - Optional fade state to use (defaults to current state)
+   * @returns Object with CSS custom properties
+   */
+  const getGradientProperties = useMemo(() => {
+    return (s: FadeState = state) => {
+      if (!shouldApplyEffects) return {}
+      
+      return generateFadeGradientProperties({
+        topColors: resolvedTopColors,
+        bottomColors: resolvedBottomColors,
+        leftColors: resolvedLeftColors,
+        rightColors: resolvedRightColors,
+        fadeColor,
+        showTop: s.showTop,
+        showBottom: s.showBottom,
+        showLeft: s.showLeft,
+        showRight: s.showRight
+      })
+    }
+  }, [state, shouldApplyEffects, resolvedTopColors, resolvedBottomColors, resolvedLeftColors, resolvedRightColors, fadeColor])
+
+  /**
+   * Gets the CSS class name for colored fades
+   * Add this class to your container along with the mask styles
+   * 
+   * @returns CSS class name for colored fade effects
+   */
+  const getColoredFadeClass = useCallback(() => COLORED_FADE_CLASS, [])
+
   return { 
     containerRef, 
     state, 
     getContainerStyle,
     getOverlayStyle, // Legacy support
+    
+    // New gradient color API
+    getGradientProperties,
+    getColoredFadeClass,
     
     // Accessibility and browser info
     accessibility: {

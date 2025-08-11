@@ -13,6 +13,16 @@ export type FadeState = {
 }
 
 /**
+ * Gradient color configuration for fade effects
+ */
+export type GradientColors = {
+  /** Start color of the gradient (solid edge). Default: 'rgba(0,0,0,0.15)' */
+  from: string
+  /** End color of the gradient (fade to transparent). Default: 'transparent' */
+  to: string
+}
+
+/**
  * Configuration options for the useScrollFades hook
  */
 export type UseScrollFadesOptions = {
@@ -20,13 +30,23 @@ export type UseScrollFadesOptions = {
   threshold?: number
   /** Size of fade effect in pixels for mask-image approach. Default: 20 */
   fadeSize?: number
-  /** CSS gradient for top fade overlay. Default: 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0))' */
+  /** Gradient colors for top fade. Default: { from: 'rgba(0,0,0,0.15)', to: 'transparent' } */
+  topColors?: GradientColors
+  /** Gradient colors for bottom fade. Default: { from: 'rgba(0,0,0,0.15)', to: 'transparent' } */
+  bottomColors?: GradientColors
+  /** Gradient colors for left fade. Default: { from: 'rgba(0,0,0,0.15)', to: 'transparent' } */
+  leftColors?: GradientColors
+  /** Gradient colors for right fade. Default: { from: 'rgba(0,0,0,0.15)', to: 'transparent' } */
+  rightColors?: GradientColors
+  /** Single color applied to all fade directions. Overrides individual direction colors. */
+  fadeColor?: string
+  /** @deprecated Use topColors instead. CSS gradient for top fade overlay. */
   topGradient?: string
-  /** CSS gradient for bottom fade overlay. Default: 'linear-gradient(to top, rgba(0,0,0,0.25), rgba(0,0,0,0))' */
+  /** @deprecated Use bottomColors instead. CSS gradient for bottom fade overlay. */
   bottomGradient?: string
-  /** CSS gradient for left fade overlay. Default: 'linear-gradient(to right, rgba(0,0,0,0.25), rgba(0,0,0,0))' */
+  /** @deprecated Use leftColors instead. CSS gradient for left fade overlay. */
   leftGradient?: string
-  /** CSS gradient for right fade overlay. Default: 'linear-gradient(to left, rgba(0,0,0,0.25), rgba(0,0,0,0))' */
+  /** @deprecated Use rightColors instead. CSS gradient for right fade overlay. */
   rightGradient?: string
   /** Duration of fade transition in milliseconds. Default: 200 */
   transitionDuration?: number

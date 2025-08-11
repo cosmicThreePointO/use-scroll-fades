@@ -85,6 +85,81 @@ function ScrollableList({ items }) {
 }
 ```
 
+## 🎨 Gradient Color Customization (New!)
+
+Customize the fade colors to match your design theme with the new gradient color API:
+
+### Simple Color Override
+```tsx
+import { useScrollFades } from '@gboue/use-scroll-fades'
+
+function ColoredScrollableList({ items }) {
+  const { 
+    containerRef, 
+    getContainerStyle,
+    getGradientProperties,
+    getColoredFadeClass
+  } = useScrollFades({
+    fadeColor: 'rgba(0, 122, 255, 0.3)', // Blue fade matching your theme
+    threshold: 16,
+    fadeSize: 24
+  })
+
+  return (
+    <div 
+      ref={containerRef}
+      className={getColoredFadeClass()} // Add colored fade support
+      style={{
+        height: '400px',
+        overflow: 'auto',
+        background: 'linear-gradient(135deg, #667eea, #764ba2)',
+        ...getContainerStyle(),
+        ...getGradientProperties() // Apply colored gradients
+      }}
+    >
+      {items.map(item => <div key={item.id}>{item.name}</div>)}
+    </div>
+  )
+}
+```
+
+### Individual Direction Colors
+```tsx
+import { useScrollFades } from '@gboue/use-scroll-fades'
+
+function CustomGradientList({ items }) {
+  const { 
+    containerRef, 
+    getContainerStyle,
+    getGradientProperties,
+    getColoredFadeClass
+  } = useScrollFades({
+    topColors: { from: 'rgba(255, 0, 0, 0.4)', to: 'transparent' },
+    bottomColors: { from: 'rgba(0, 255, 0, 0.4)', to: 'transparent' },
+    leftColors: { from: 'rgba(0, 0, 255, 0.4)', to: 'transparent' },
+    rightColors: { from: 'rgba(255, 255, 0, 0.4)', to: 'transparent' }
+  })
+
+  return (
+    <div 
+      ref={containerRef}
+      className={getColoredFadeClass()}
+      style={{
+        height: '400px',
+        overflow: 'auto',
+        ...getContainerStyle(),
+        ...getGradientProperties()
+      }}
+    >
+      {items.map(item => <div key={item.id}>{item.name}</div>)}
+    </div>
+  )
+}
+```
+
+### Interactive Demo
+Try the live color picker demo at: https://cosmicthreepointo.github.io/use-scroll-fades/
+
 ### Legacy Overlay Approach (Deprecated)
 
 For backward compatibility, the overlay approach is still available but deprecated:
@@ -272,9 +347,21 @@ export type FadeState = {
   showRight: boolean   // Horizontal scroll: right fade visibility
 }
 
+export type GradientColors = {
+  from: string // Start color (solid edge), default 'rgba(0,0,0,0.15)'
+  to: string   // End color (fade to transparent), default 'transparent'
+}
+
 export type UseScrollFadesOptions = {
+  // Basic configuration
   threshold?: number // px edge tolerance, default 8
   fadeSize?: number // Size of fade effect in pixels, default 20
+  // 🎨 NEW: Gradient color customization
+  fadeColor?: string // Single color for all directions, overrides individual colors
+  topColors?: GradientColors // Custom gradient colors for top fade
+  bottomColors?: GradientColors // Custom gradient colors for bottom fade
+  leftColors?: GradientColors // Custom gradient colors for left fade
+  rightColors?: GradientColors // Custom gradient colors for right fade
   // Legacy overlay gradients (deprecated)
   topGradient?: string // CSS gradient for the top overlay
   bottomGradient?: string // CSS gradient for the bottom overlay
@@ -308,6 +395,16 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
     position: 'top' | 'bottom' | 'left' | 'right',
     state?: FadeState
   ) => React.CSSProperties
+  /**
+   * 🎨 NEW: Get CSS custom properties for colored gradient fades
+   * Use with getColoredFadeClass() for colored fade effects
+   */
+  getGradientProperties: (state?: FadeState) => Record<string, string>
+  /**
+   * 🎨 NEW: Get CSS class name for colored fades
+   * Add this class to your container along with getContainerStyle()
+   */
+  getColoredFadeClass: () => string
   /**
    * 🔧 Accessibility and browser compatibility information
    */

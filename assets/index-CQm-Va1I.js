@@ -480,6 +480,8 @@ function MyComponent() {
       ref={containerRef}
       style={{
         height: '400px',
+        width: 'fit-content', // Fits content width - no horizontal scroll
+        minWidth: '300px',    // Minimum width for readability
         overflow: 'auto',
         ...getContainerStyle()
       }}
@@ -504,6 +506,8 @@ function MyComponent() {
       ref={containerRef}
       style={{
         height: '400px',
+        width: 'fit-content', // Fits content width - no horizontal scroll
+        minWidth: '300px',    // Minimum width for readability
         overflow: 'auto',
         ...getContainerStyle()
       }}

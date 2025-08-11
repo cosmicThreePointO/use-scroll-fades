@@ -3,12 +3,21 @@ import { useScrollFades } from '@gboue/use-scroll-fades';
 import { useScrollHijack } from '../hooks/useScrollHijack';
 
 function ScrollExample({ example, reverse }) {
-  const { containerRef: fadeRef, getContainerStyle } = useScrollFades({
+  const { containerRef: fadeRef, getContainerStyle, accessibility } = useScrollFades({
     threshold: 8,
     fadeSize: 20,
     transitionDuration: 300,
     transitionTimingFunction: 'ease-out'
   });
+
+  // Log accessibility information (for development/demo purposes)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[${example.title}] Accessibility:`, {
+      shouldApplyEffects: accessibility.shouldApplyEffects,
+      reducedMotionPreferred: accessibility.reducedMotionPreferred,
+      maskImageSupported: accessibility.browserCapabilities.supportsMaskImage
+    });
+  }
 
   // Disable scroll hijacking for combined scroll type
   const shouldEnableHijack = example.type !== 'combined';

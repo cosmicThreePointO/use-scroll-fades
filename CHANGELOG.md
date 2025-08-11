@@ -69,6 +69,81 @@ This addresses user feedback about missing accessibility checks and browser flag
 Effects now automatically disable when users prefer reduced motion or when
 browsers don't support mask-image, ensuring inclusive user experiences.
 
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+# [3.0.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v2.1.0...v3.0.0) (2025-08-11)
+
+
+### Bug Fixes
+
+* update tests to work with new accessibility features ([5d4d60b](https://github.com/cosmicThreePointO/use-scroll-fades/commit/5d4d60bb44806ae3b61781e27a591ca5506f2003))
+
+
+### chore
+
+* **release:** 3.0.0 ([77eb693](https://github.com/cosmicThreePointO/use-scroll-fades/commit/77eb693b2255fad3cf7e82ed12e7aee75a81d532))
+
+
+### Features
+
+* add comprehensive accessibility and browser compatibility support ([0bed837](https://github.com/cosmicThreePointO/use-scroll-fades/commit/0bed837e3c8a85eff814997586a3ad45069e825a))
+
+
+### BREAKING CHANGES
+
+* **release:** Hook now automatically respects accessibility preferences
+
+- Auto-respect prefers-reduced-motion by default (respectReducedMotion: true)
+- Auto-disable effects when mask-image unsupported (respectBrowserSupport: true)
+- New accessibility utilities and browser compatibility checks
+- Enhanced documentation with accessibility guide
+- All tests passing (76/76)
+
+This is a breaking change because the hook behavior now changes based on
+user accessibility preferences, which may affect existing users who were
+not seeing effects due to browser/accessibility limitations.
+* Hook now automatically respects user accessibility preferences
+
+✨ New Accessibility Features:
+- Auto-detect and respect prefers-reduced-motion setting
+- Automatic CSS mask-image browser support detection
+- Graceful degradation for unsupported browsers
+- Real-time motion preference monitoring with watchMotionPreference()
+- High contrast mode detection
+- Server-side rendering (SSR) compatibility
+
+🔧 New Configuration Options:
+- respectReducedMotion: boolean (default: true) - Auto-respect motion preferences
+- respectBrowserSupport: boolean (default: true) - Disable effects if unsupported
+- maskImageFallback: 'disable' | 'ignore' (default: 'disable') - Fallback behavior
+
+📊 New Return Values:
+- accessibility.shouldApplyEffects - Whether effects should be enabled
+- accessibility.reducedMotionPreferred - Current user motion preference
+- accessibility.browserCapabilities - Detailed browser feature detection
+- accessibility.shouldDisableTransitions - Whether transitions are disabled
+
+🛠️ New Utility Functions (exported):
+- prefersReducedMotion() - Check user's motion preference
+- prefersHighContrast() - Check high contrast mode
+- supportsMaskImage() - CSS mask-image feature detection
+- supportsTransitions() - CSS transitions support check
+- getMotionPreference() - Get detailed motion preference
+- watchMotionPreference() - Monitor preference changes
+- getBrowserCapabilities() - Comprehensive browser info
+
+📖 Enhanced Documentation:
+- Complete accessibility guide with examples
+- Browser compatibility matrix
+- Feature detection examples
+- Progressive enhancement patterns
+
+This addresses user feedback about missing accessibility checks and browser flags.
+Effects now automatically disable when users prefer reduced motion or when
+browsers don't support mask-image, ensuring inclusive user experiences.
+
 # [3.0.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v2.1.0...v3.0.0) (2025-08-11)
 
 ### ⚡ BREAKING CHANGES

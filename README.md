@@ -7,8 +7,11 @@ Library-agnostic React hook that adds **scroll-fade indicators** to any scrollab
 
 * **Vertical scrolling**: Top/bottom fades for vertical content
 * **Horizontal scrolling**: Left/right fades for horizontal content  
+* **🎨 Custom gradient colors**: Full control over fade colors and opacity
+* **♿ Accessibility support**: Auto-respects `prefers-reduced-motion` and browser capabilities
 * **Smart hiding**: Fades automatically hide at scroll edges
 * **Smooth animations**: Built-in CSS transitions with cross-browser support
+* **Interactive demos**: Live color picker and examples at [demo site](https://cosmicthreepointo.github.io/use-scroll-fades/)
 * Zero external deps, React only
 * Ships with TypeScript definitions
 
@@ -157,8 +160,105 @@ function CustomGradientList({ items }) {
 }
 ```
 
+### Advanced Custom Color Example (Overlay Method)
+For complex scenarios where you need full control over positioning and effects:
+
+```tsx
+import React, { useRef, useEffect } from 'react';
+import { useScrollFades } from '@gboue/use-scroll-fades';
+
+function AdvancedColorFadeList({ items }) {
+  const { containerRef, state } = useScrollFades({
+    threshold: 8,
+    fadeSize: 50,
+    transitionDuration: 300
+  });
+
+  const topFadeRef = useRef(null);
+  const bottomFadeRef = useRef(null);
+
+  // Custom colors with opacity
+  const topColor = 'rgba(255, 69, 0, 0.2)';    // Orange fade
+  const bottomColor = 'rgba(0, 128, 255, 0.2)'; // Blue fade
+
+  // Position overlays to match container
+  useEffect(() => {
+    const updatePositions = () => {
+      if (!containerRef.current) return;
+      
+      const rect = containerRef.current.getBoundingClientRect();
+      const style = window.getComputedStyle(containerRef.current);
+      
+      if (topFadeRef.current) {
+        topFadeRef.current.style.top = `${rect.top}px`;
+        topFadeRef.current.style.left = `${rect.left}px`;
+        topFadeRef.current.style.width = `${rect.width}px`;
+        topFadeRef.current.style.borderRadius = style.borderRadius;
+      }
+      
+      if (bottomFadeRef.current) {
+        bottomFadeRef.current.style.bottom = `${window.innerHeight - rect.bottom}px`;
+        bottomFadeRef.current.style.left = `${rect.left}px`;
+        bottomFadeRef.current.style.width = `${rect.width}px`;
+        bottomFadeRef.current.style.borderRadius = style.borderRadius;
+      }
+    };
+
+    updatePositions();
+    const interval = setInterval(updatePositions, 100);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <div 
+        ref={containerRef}
+        style={{
+          height: '400px',
+          overflow: 'auto',
+          background: '#ffffff',
+          borderRadius: '16px',
+          border: '1px solid #e2e8f0'
+        }}
+      >
+        {items.map(item => (
+          <div key={item.id} style={{ padding: '1rem', margin: '1rem' }}>
+            {item.content}
+          </div>
+        ))}
+      </div>
+
+      {/* Colored fade overlays */}
+      <div 
+        ref={topFadeRef}
+        style={{
+          position: 'fixed',
+          height: '50px',
+          background: `linear-gradient(to bottom, ${topColor}, transparent)`,
+          display: state.showTop ? 'block' : 'none',
+          pointerEvents: 'none',
+          zIndex: 10
+        }}
+      />
+      <div 
+        ref={bottomFadeRef}
+        style={{
+          position: 'fixed',
+          height: '50px',
+          background: `linear-gradient(to top, ${bottomColor}, transparent)`,
+          display: state.showBottom ? 'block' : 'none',
+          pointerEvents: 'none',
+          zIndex: 10
+        }}
+      />
+    </div>
+  );
+}
+```
+
 ### Interactive Demo
-Try the live color picker demo at: https://cosmicthreepointo.github.io/use-scroll-fades/
+Try the live interactive color picker demo at: https://cosmicthreepointo.github.io/use-scroll-fades/
 
 ### Legacy Overlay Approach (Deprecated)
 

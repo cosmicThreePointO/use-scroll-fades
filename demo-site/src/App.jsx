@@ -19,17 +19,12 @@ const examples = [
     type: 'vertical'
   },
   {
-    id: 'colored',
-    title: 'Colored Gradient Fades',
-    description: 'Custom blue gradient fades that match the content theme and provide subtle visual enhancement',
-    content: Array.from({ length: 40 }, (_, i) => ({
-      title: `Feature ${i + 1}`,
-      description: `This demonstrates colored fade effects with custom gradient colors that complement the design.`,
-      category: i % 3 === 0 ? 'Premium' : i % 3 === 1 ? 'Standard' : 'Basic'
-    })),
-    height: '450px',
-    type: 'colored',
-    fadeColor: 'rgba(0, 122, 255, 0.2)' // Custom blue fade
+    id: 'palette',
+    title: 'Interactive Color Palette',
+    description: 'Choose from beautiful color combinations for top and bottom fades. Perfect for matching your brand colors with real-time preview.',
+    content: [], // This will use the InteractivePaletteDemo component
+    height: 'auto',
+    type: 'palette'
   },
   {
     id: 'slideshow',

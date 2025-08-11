@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useScrollFades, generateColoredFadeCSS } from '@gboue/use-scroll-fades';
 import { useScrollHijack } from '../hooks/useScrollHijack';
+import InteractivePaletteDemo from './InteractivePaletteDemo';
 
 // Inject CSS for colored fades once
 let cssInjected = false;
@@ -48,8 +49,8 @@ function ScrollExample({ example, reverse }) {
     });
   }
 
-  // Disable scroll hijacking for combined scroll type
-  const shouldEnableHijack = example.type !== 'combined';
+  // Disable scroll hijacking for combined, colored, and palette scroll types
+  const shouldEnableHijack = example.type !== 'combined' && example.type !== 'colored' && example.type !== 'palette';
   const { containerRef: hijackRef, isHijacked, scrollProgress } = useScrollHijack(shouldEnableHijack);
 
   // Combine refs
@@ -60,6 +61,9 @@ function ScrollExample({ example, reverse }) {
 
   const renderContent = () => {
     switch (example.type) {
+      case 'palette':
+        return <InteractivePaletteDemo />;
+
       case 'colored':
         return (
           <div className="colored-content">
@@ -145,16 +149,36 @@ function ScrollExample({ example, reverse }) {
       ...getContainerStyle()
     };
     
-    // Add gradient properties and class for colored examples
+    // For colored examples, add box-shadow based fades instead of mask approach
     if (example.fadeColor) {
       return {
         ...baseStyles,
-        ...getGradientProperties()
+        // Use inset box-shadow for fade effects
+        boxShadow: `
+          inset 0 20px 20px -20px ${example.fadeColor},
+          inset 0 -20px 20px -20px ${example.fadeColor}
+        `
       };
     }
     
     return baseStyles;
   };
+
+  // For palette type, render without scroll container wrapper
+  if (example.type === 'palette') {
+    return (
+      <div className={`scroll-example ${reverse ? 'reverse' : ''}`}>
+        <div className="example-info">
+          <h3 className="example-title">{example.title}</h3>
+          <p className="example-description">{example.description}</p>
+        </div>
+        
+        <div className="example-demo">
+          {renderContent()}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`scroll-example ${reverse ? 'reverse' : ''} ${isHijacked ? 'hijacked' : ''}`}>
@@ -167,7 +191,7 @@ function ScrollExample({ example, reverse }) {
         <div 
           ref={combineRefs}
           style={getScrollStyle()}
-          className={`scroll-container ${example.type}-scroll ${isHijacked ? 'active-hijack' : ''} ${example.fadeColor ? getColoredFadeClass() : ''}`}
+          className={`scroll-container ${example.type}-scroll ${isHijacked ? 'active-hijack' : ''}`}
         >
           {renderContent()}
         </div>

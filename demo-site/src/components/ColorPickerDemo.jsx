@@ -59,11 +59,13 @@ function ColorPickerDemo() {
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     borderRadius: '12px',
     padding: '20px',
-    ...getContainerStyle()
+    ...getContainerStyle(),
+    // Add colored fade using box-shadow overlay
+    boxShadow: `
+      inset 0 20px 20px -20px ${currentFadeColor},
+      inset 0 -20px 20px -20px ${currentFadeColor}
+    `
   };
-
-  const gradientProps = getGradientProperties();
-  const coloredFadeClass = getColoredFadeClass();
 
   return (
     <div className="color-picker-demo">
@@ -118,8 +120,8 @@ function ColorPickerDemo() {
       <div className="demo-container">
         <div 
           ref={containerRef}
-          className={`scroll-content ${coloredFadeClass}`}
-          style={{ ...containerStyle, ...gradientProps }}
+          className="scroll-content"
+          style={containerStyle}
         >
           {sampleItems.map((item) => (
             <div key={item.id} className="content-item">
@@ -149,24 +151,21 @@ function ColorPickerDemo() {
         <div className="info-section">
           <h4>Usage Example</h4>
           <pre className="code-example">
-{`const { 
-  containerRef, 
-  getContainerStyle, 
-  getGradientProperties, 
-  getColoredFadeClass 
-} = useScrollFades({
+{`const { containerRef, getContainerStyle } = useScrollFades({
   fadeColor: '${currentFadeColor}'
 })
 
-// Apply styles to your container
+// Simple colored fade with box-shadow
 <div 
   ref={containerRef}
-  className={getColoredFadeClass()}
   style={{
     height: '300px',
     overflow: 'auto',
     ...getContainerStyle(),
-    ...getGradientProperties()
+    boxShadow: \`
+      inset 0 20px 20px -20px ${currentFadeColor},
+      inset 0 -20px 20px -20px ${currentFadeColor}
+    \`
   }}
 >
   {/* Your scrollable content */}

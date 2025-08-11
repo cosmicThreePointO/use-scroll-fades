@@ -3,6 +3,24 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { useScrollFades } from '../src/useScrollFades'
 
+// Mock CSS.supports to return true for testing
+Object.defineProperty(window, 'CSS', {
+  value: {
+    supports: vi.fn().mockReturnValue(true)
+  },
+  writable: true
+})
+
+// Mock matchMedia to return false for reduced motion (allow effects)
+Object.defineProperty(window, 'matchMedia', {
+  value: vi.fn().mockImplementation(() => ({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn()
+  })),
+  writable: true
+})
+
 // Test component that uses the new mask-image approach
 function TestComponent({ options = {} }: { options?: any }) {
   const { containerRef, state, getContainerStyle, getOverlayStyle } = useScrollFades(options)

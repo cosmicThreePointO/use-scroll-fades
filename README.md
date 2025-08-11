@@ -37,7 +37,7 @@ Types are included. If you use JavaScript only, no extra step is required. If yo
 See the library in action with different scrolling scenarios at the official github page: https://cosmicthreepointo.github.io/use-scroll-fades/
 
 ### Vertical Scrolling with Gradient Background ✨
-![Vertical Scrolling with Gradient Background](./docs/demo-vertical-gradient.gif)
+![Vertical Scrolling with Gradient Background](./docs/vertical-scroll-fade.gif)
 
 > ⚠️ **Top and bottom fades** that works perfectly with complex gradient backgrounds!
 
@@ -50,6 +50,11 @@ See the library in action with different scrolling scenarios at the official git
 ![Combined Vertical + Horizontal Scrolling](./docs/combined-vertical-horizontal-fade.gif)
 
 > 🚀 **All four fades** (top, bottom, left, right) work together automatically. No configuration needed!
+
+### Custom Color Gradients 🌈
+![Custom Color Gradients](./docs/use-scroll-fades-colors.gif)
+
+> 🌈 **Customizable gradient colors** with full control over fade appearance and styling!
 
 ---
 

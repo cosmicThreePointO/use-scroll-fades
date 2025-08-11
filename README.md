@@ -31,7 +31,7 @@ Types are included. If you use JavaScript only, no extra step is required. If yo
 
 ## Visual Examples
 
-See the library in action with different scrolling scenarios:
+See the library in action with different scrolling scenarios at the official github page: https://cosmicthreepointo.github.io/use-scroll-fades/
 
 ### Vertical Scrolling with Gradient Background ✨
 ![Vertical Scrolling with Gradient Background](./docs/demo-vertical-gradient.gif)

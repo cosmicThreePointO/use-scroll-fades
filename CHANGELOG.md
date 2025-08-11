@@ -1,3 +1,10 @@
+# [3.2.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v3.1.0...v3.2.0) (2025-08-11)
+
+
+### Features
+
+* add interactive color palette demo with perfect fade positioning ([b541253](https://github.com/cosmicThreePointO/use-scroll-fades/commit/b54125387be22436d0be0aff045f4b6eedb4f74d))
+
 # [3.1.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v3.0.0...v3.1.0) (2025-08-11)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@gboue/use-scroll-fades",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Library-agnostic React hook that adds scroll-fade indicators to any scrollable container (vertical and horizontal)",
   "main": "dist/index.js",
   "module": "dist/index.js",

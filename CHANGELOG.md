@@ -1,3 +1,10 @@
+# [3.3.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v3.2.0...v3.3.0) (2025-08-11)
+
+
+### Features
+
+* enhance demo site with improved code example layout and documentation ([08d24ff](https://github.com/cosmicThreePointO/use-scroll-fades/commit/08d24ffd38194b4c182d14d359657938a11232c4))
+
 # [3.2.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v3.1.0...v3.2.0) (2025-08-11)
 
 

@@ -34,4 +34,10 @@ export type UseScrollFadesOptions = {
   transitionTimingFunction?: string
   /** Disable CSS transitions entirely. Default: false */
   disableTransitions?: boolean
+  /** Automatically respect user's prefers-reduced-motion setting. Default: true */
+  respectReducedMotion?: boolean
+  /** Force disable all effects if browser doesn't support mask-image. Default: true */
+  respectBrowserSupport?: boolean
+  /** Fallback behavior when mask-image is not supported. Default: 'disable' */
+  maskImageFallback?: 'disable' | 'ignore'
 }

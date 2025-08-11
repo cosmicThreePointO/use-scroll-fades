@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { FadeState, UseScrollFadesOptions } from './types'
 import { computeFadeState } from './computeFadeState'
+import { prefersReducedMotion, watchMotionPreference, getBrowserCapabilities } from './utils/accessibility'
 
 /**
  * Creates transition CSS value with vendor prefixes for cross-browser compatibility
@@ -72,6 +73,9 @@ const computeContainerStyles = (params: {
   disableTransitions: boolean
   transitionDuration: number
   transitionTimingFunction: string
+  shouldApplyEffects: boolean
+  maskImageSupported: boolean
+  maskImageFallback: 'disable' | 'ignore'
 }): React.CSSProperties => {
   const { 
     showTop, 
@@ -81,8 +85,31 @@ const computeContainerStyles = (params: {
     fadeSize,
     disableTransitions, 
     transitionDuration, 
-    transitionTimingFunction 
+    transitionTimingFunction,
+    shouldApplyEffects,
+    maskImageSupported,
+    maskImageFallback
   } = params
+  
+  // If effects should be disabled, return empty styles
+  if (!shouldApplyEffects) {
+    return {}
+  }
+
+  // Handle mask-image fallback
+  if (!maskImageSupported) {
+    if (maskImageFallback === 'disable') {
+      // Log warning for developers
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(
+          'use-scroll-fades: mask-image is not supported in this browser. ' +
+          'Fade effects are disabled. Set maskImageFallback="ignore" to apply styles anyway.'
+        )
+      }
+      return {}
+    }
+    // If fallback is 'ignore', continue with mask styles (developer choice)
+  }
   
   const maskImage = createMaskImage(showTop, showBottom, showLeft, showRight, fadeSize)
   
@@ -150,7 +177,10 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
     fadeSize = 20,
     transitionDuration = 200,
     transitionTimingFunction = 'ease-out',
-    disableTransitions = false
+    disableTransitions = false,
+    respectReducedMotion = true,
+    respectBrowserSupport = true,
+    maskImageFallback = 'disable'
     // Legacy overlay options are ignored in mask-image implementation
   } = options
 
@@ -161,7 +191,34 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
     showLeft: false, 
     showRight: false 
   })
+  const [reducedMotionPreferred, setReducedMotionPreferred] = useState(false)
   const frame = useRef<number | null>(null)
+  
+  // Check browser capabilities once
+  const browserCapabilities = useMemo(() => getBrowserCapabilities(), [])
+  
+  // Check if we should apply effects based on accessibility and browser support
+  const shouldApplyEffects = useMemo(() => {
+    // Respect reduced motion preference
+    if (respectReducedMotion && (reducedMotionPreferred || browserCapabilities.prefersReducedMotion)) {
+      return false
+    }
+    
+    // Respect browser support (if enabled)
+    if (respectBrowserSupport && !browserCapabilities.supportsMaskImage && maskImageFallback === 'disable') {
+      return false
+    }
+    
+    return true
+  }, [respectReducedMotion, reducedMotionPreferred, respectBrowserSupport, browserCapabilities, maskImageFallback])
+  
+  // Determine if transitions should be disabled
+  const shouldDisableTransitions = useMemo(() => {
+    if (disableTransitions) return true
+    if (respectReducedMotion && (reducedMotionPreferred || browserCapabilities.prefersReducedMotion)) return true
+    if (!browserCapabilities.supportsTransitions) return true
+    return false
+  }, [disableTransitions, respectReducedMotion, reducedMotionPreferred, browserCapabilities])
 
   /**
    * Measures current scroll position and updates fade state accordingly
@@ -199,6 +256,21 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
       measure()
     })
   }, [measure])
+
+  // Watch for changes to motion preferences
+  useEffect(() => {
+    if (!respectReducedMotion) return
+
+    // Set initial state
+    setReducedMotionPreferred(prefersReducedMotion())
+
+    // Watch for changes
+    const cleanup = watchMotionPreference((prefersReduced) => {
+      setReducedMotionPreferred(prefersReduced)
+    })
+
+    return cleanup
+  }, [respectReducedMotion])
 
   useEffect(() => {
     const el = containerRef.current
@@ -242,12 +314,15 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
         showLeft: s.showLeft,
         showRight: s.showRight,
         fadeSize,
-        disableTransitions,
+        disableTransitions: shouldDisableTransitions,
         transitionDuration,
-        transitionTimingFunction
+        transitionTimingFunction,
+        shouldApplyEffects,
+        maskImageSupported: browserCapabilities.supportsMaskImage,
+        maskImageFallback
       })
     }
-  }, [state, fadeSize, transitionDuration, transitionTimingFunction, disableTransitions])
+  }, [state, fadeSize, shouldDisableTransitions, transitionDuration, transitionTimingFunction, shouldApplyEffects, browserCapabilities.supportsMaskImage, maskImageFallback])
 
   /**
    * Legacy overlay style function - kept for backward compatibility
@@ -270,6 +345,14 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
     containerRef, 
     state, 
     getContainerStyle,
-    getOverlayStyle // Legacy support
+    getOverlayStyle, // Legacy support
+    
+    // Accessibility and browser info
+    accessibility: {
+      shouldApplyEffects,
+      reducedMotionPreferred,
+      browserCapabilities,
+      shouldDisableTransitions
+    }
   }
 }

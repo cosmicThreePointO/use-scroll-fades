@@ -284,6 +284,10 @@ export type UseScrollFadesOptions = {
   transitionDuration?: number // Fade transition duration in ms, default 200
   transitionTimingFunction?: string // CSS timing function, default 'ease-out'
   disableTransitions?: boolean // Disable animations, default false
+  // Accessibility and browser support
+  respectReducedMotion?: boolean // Auto-respect prefers-reduced-motion, default true
+  respectBrowserSupport?: boolean // Disable if mask-image unsupported, default true
+  maskImageFallback?: 'disable' | 'ignore' // Fallback behavior, default 'disable'
 }
 
 export function useScrollFades<T extends HTMLElement = HTMLElement>(
@@ -304,15 +308,100 @@ export function useScrollFades<T extends HTMLElement = HTMLElement>(
     position: 'top' | 'bottom' | 'left' | 'right',
     state?: FadeState
   ) => React.CSSProperties
+  /**
+   * 🔧 Accessibility and browser compatibility information
+   */
+  accessibility: {
+    shouldApplyEffects: boolean // Whether effects are enabled based on user prefs
+    reducedMotionPreferred: boolean // User's motion preference state
+    browserCapabilities: object // Detailed browser capability detection
+    shouldDisableTransitions: boolean // Whether transitions should be disabled
+  }
 }
 ```
 
 ### Notes
 
 * **Agnostic**: The hook returns state and a small helper. You are free to style overlays with CSS classes, CSS modules, styled components, etc. The gradients are plain CSS strings you can override.
-* **Accessibility**: Overlays are `aria-hidden` and `pointer-events: none` in the example so they never block interaction.
+* **Accessibility**: Automatically respects `prefers-reduced-motion` and checks browser support for graceful degradation.
 * **Performance**: Uses `requestAnimationFrame`, `ResizeObserver`, and `MutationObserver` to stay accurate during resizes and dynamic content changes without jank.
 * **Smooth Animations**: Built-in CSS transitions provide smooth fade in/out effects with cross-browser support.
+
+---
+
+## ♿ Accessibility & Browser Support
+
+The library automatically respects user accessibility preferences and browser capabilities:
+
+### Accessibility Features
+
+- **🎯 `prefers-reduced-motion` Support**: Automatically disables transitions when users prefer reduced motion
+- **🌐 Browser Detection**: Checks for CSS `mask-image` support before applying effects
+- **⚡ Progressive Enhancement**: Falls back gracefully in unsupported browsers
+- **🔧 Manual Control**: Override automatic behavior when needed
+
+```tsx
+function AccessibleScrollList() {
+  const { containerRef, getContainerStyle, accessibility } = useScrollFades({
+    respectReducedMotion: true,      // Default: true - respects user preference
+    respectBrowserSupport: true,     // Default: true - checks browser capabilities  
+    maskImageFallback: 'disable'    // Default: 'disable' - what to do if unsupported
+  })
+  
+  // Access detailed accessibility information
+  console.log(accessibility.shouldApplyEffects)      // false if user prefers reduced motion
+  console.log(accessibility.reducedMotionPreferred)  // current user preference
+  console.log(accessibility.browserCapabilities)     // detailed browser info
+  console.log(accessibility.shouldDisableTransitions) // whether transitions are disabled
+
+  return (
+    <div 
+      ref={containerRef}
+      style={{
+        height: '300px',
+        overflow: 'auto',
+        ...getContainerStyle()  // Will be empty if effects should not apply
+      }}
+    >
+      {/* Your content */}
+    </div>
+  )
+}
+```
+
+### Browser Compatibility
+
+**✅ Full Support**:
+- Chrome 120+ (mask-image stable)
+- Firefox 53+ (mask-image stable)
+- Safari 15.4+ (mask-image stable)
+- Edge 79+ (Chromium-based)
+
+**⚠️ Partial Support**:
+- Safari 3.1+ (with `-webkit-` prefix)
+- Legacy browsers: Falls back gracefully (no effects, no errors)
+
+**🔧 Manual Feature Detection**:
+```tsx
+import { supportsMaskImage, prefersReducedMotion } from '@gboue/use-scroll-fades'
+
+// Check browser capabilities manually
+if (supportsMaskImage()) {
+  console.log('Mask-image is supported!')
+}
+
+if (prefersReducedMotion()) {
+  console.log('User prefers reduced motion')
+}
+```
+
+### Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `respectReducedMotion` | `boolean` | `true` | Automatically respect `prefers-reduced-motion: reduce` |
+| `respectBrowserSupport` | `boolean` | `true` | Disable effects if `mask-image` is not supported |
+| `maskImageFallback` | `'disable' \| 'ignore'` | `'disable'` | What to do when mask-image is unsupported |
 
 ---
 

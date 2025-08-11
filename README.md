@@ -72,6 +72,8 @@ function ScrollableList({ items }) {
       ref={containerRef}
       style={{
         height: '400px',
+        width: 'fit-content', // Fits content width - no horizontal scroll
+        minWidth: '300px',    // Minimum width for readability
         overflow: 'auto',
         // Complex background that works perfectly with mask-image
         backgroundImage: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
@@ -79,7 +81,7 @@ function ScrollableList({ items }) {
       }}
     >
       {items.map(item => (
-        <div key={item.id} className="item">
+        <div key={item.id} className="item" style={{ padding: '1rem' }}>
           {item.name}
         </div>
       ))}

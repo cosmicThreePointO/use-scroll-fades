@@ -480,7 +480,7 @@ function MyComponent() {
       ref={containerRef}
       style={{
         height: '400px',
-        width: '100%', // Full width to show all code without scrolling
+        width: '800px', // Much wider to display all code comfortably
         overflow: 'auto',
         ...getContainerStyle()
       }}
@@ -505,7 +505,7 @@ function MyComponent() {
       ref={containerRef}
       style={{
         height: '400px',
-        width: '100%', // Full width to show all code without scrolling
+        width: '800px', // Much wider to display all code comfortably
         overflow: 'auto',
         ...getContainerStyle()
       }}

@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v3.0.0...v3.1.0) (2025-08-11)
+
+
+### Features
+
+* add gradient color customization feature ([8874911](https://github.com/cosmicThreePointO/use-scroll-fades/commit/8874911acef055f9c9c16c5671a9b83c081cfcd5))
+
 # [3.0.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v2.1.0...v3.0.0) (2025-08-11)
 
 

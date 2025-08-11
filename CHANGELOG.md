@@ -1,5 +1,52 @@
-# [2.1.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v2.0.1...v2.1.0) (2025-08-11)
+# [3.0.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v2.1.0...v3.0.0) (2025-08-11)
 
+### ⚡ BREAKING CHANGES
+
+* **accessibility**: The hook now automatically respects user accessibility preferences by default
+* Effects automatically disable when `prefers-reduced-motion: reduce` is set
+* Effects automatically disable when browser doesn't support CSS `mask-image`
+* This may change behavior for users who were not previously seeing effects due to accessibility settings
+
+### ✨ Features
+
+* **accessibility**: Add comprehensive accessibility and browser compatibility support ([41dceab](https://github.com/cosmicThreePointO/use-scroll-fades/commit/41dceab))
+* **accessibility**: Auto-detect and respect `prefers-reduced-motion` setting
+* **accessibility**: Automatic CSS `mask-image` browser support detection
+* **accessibility**: Graceful degradation for unsupported browsers  
+* **accessibility**: Real-time motion preference monitoring with `watchMotionPreference()`
+* **accessibility**: High contrast mode detection
+* **accessibility**: Server-side rendering (SSR) compatibility
+
+### 🔧 New Configuration Options
+
+* `respectReducedMotion: boolean` (default: true) - Auto-respect motion preferences
+* `respectBrowserSupport: boolean` (default: true) - Disable effects if unsupported
+* `maskImageFallback: 'disable' | 'ignore'` (default: 'disable') - Fallback behavior
+
+### 📊 New Return Values  
+
+* `accessibility.shouldApplyEffects` - Whether effects should be enabled
+* `accessibility.reducedMotionPreferred` - Current user motion preference
+* `accessibility.browserCapabilities` - Detailed browser feature detection
+* `accessibility.shouldDisableTransitions` - Whether transitions are disabled
+
+### 🛠️ New Utility Functions (exported)
+
+* `prefersReducedMotion()` - Check user's motion preference
+* `prefersHighContrast()` - Check high contrast mode
+* `supportsMaskImage()` - CSS mask-image feature detection
+* `supportsTransitions()` - CSS transitions support check
+* `getMotionPreference()` - Get detailed motion preference
+* `watchMotionPreference()` - Monitor preference changes
+* `getBrowserCapabilities()` - Comprehensive browser info
+
+### 📖 Documentation
+
+* Enhanced documentation with complete accessibility guide
+* Browser compatibility matrix
+* Feature detection examples and progressive enhancement patterns
+
+# [2.1.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v2.0.1...v2.1.0) (2025-08-11)
 
 ### Features
 

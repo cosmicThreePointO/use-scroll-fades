@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v2.0.1...v2.1.0) (2025-08-11)
+
+
+### Features
+
+* implement advanced scroll hijacking and enhance demo site ([58c7ce6](https://github.com/cosmicThreePointO/use-scroll-fades/commit/58c7ce69ddedae2d8989c43ff42939a49290b006))
+
 ## [2.0.1](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v2.0.0...v2.0.1) (2025-08-10)
 
 

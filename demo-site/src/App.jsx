@@ -2,7 +2,6 @@ import React from 'react';
 import Hero from './components/Hero';
 import ScrollExample from './components/ScrollExample';
 import CodeExample from './components/CodeExample';
-import ColorPickerDemo from './components/ColorPickerDemo';
 import Footer from './components/Footer';
 import ScrollIndicator from './components/ScrollIndicator';
 import BackToTop from './components/BackToTop';
@@ -119,13 +118,6 @@ function App() {
         </section>
 
         <CodeExample />
-        
-        <section className="color-demo-section">
-          <div className="container">
-            <ColorPickerDemo />
-          </div>
-        </section>
-        
         <Footer />
         <BackToTop />
       </div>

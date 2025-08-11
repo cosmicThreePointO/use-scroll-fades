@@ -16,6 +16,7 @@ function MyComponent() {
       ref={containerRef}
       style={{
         height: '400px',
+        width: '800px', // Much wider to display all code comfortably
         overflow: 'auto',
         ...getContainerStyle()
       }}
@@ -48,6 +49,7 @@ function MyComponent() {
       ref={containerRef}
       style={{
         height: '400px',
+        width: '800px', // Much wider to display all code comfortably
         overflow: 'auto',
         ...getContainerStyle()
       }}

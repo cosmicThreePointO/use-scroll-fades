@@ -69,10 +69,6 @@ This addresses user feedback about missing accessibility checks and browser flag
 Effects now automatically disable when users prefer reduced motion or when
 browsers don't support mask-image, ensuring inclusive user experiences.
 
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-
 # [3.0.0](https://github.com/cosmicThreePointO/use-scroll-fades/compare/v2.1.0...v3.0.0) (2025-08-11)
 
 ### ⚡ BREAKING CHANGES
